@@ -1,0 +1,111 @@
+/* Clases compartidas del panel admin. Prefijo del proyecto: i3d- */
+
+.i3d-page-shell {
+  padding: var(--sp-5);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.i3d-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+.i3d-page-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.i3d-page-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.i3d-section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  box-shadow: var(--shadow-1);
+}
+
+.i3d-toolbar {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--sp-4);
+}
+.i3d-toolbar .i3d-grow { flex: 1 1 240px; }
+
+/* Bento / KPI grid del dashboard */
+.i3d-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+
+.i3d-kpi {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  overflow: hidden;
+  transition: border-color var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
+}
+.i3d-kpi:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.i3d-kpi::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--border-strong);
+}
+.i3d-kpi.i3d-kpi--accent::after { background: var(--accent); }
+.i3d-kpi.i3d-kpi--tech::after { background: var(--tech); }
+.i3d-kpi.i3d-kpi--positive::after { background: var(--success); }
+.i3d-kpi.i3d-kpi--warning::after { background: var(--warning); }
+
+.i3d-kpi-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 8px;
+}
+
+.i3d-kpi-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.i3d-kpi-value.i3d-accent { color: var(--accent); }
+.i3d-kpi-value.i3d-positive { color: var(--success); }
+.i3d-kpi-value.i3d-warning { color: var(--warning); }
+.i3d-kpi-value.i3d-tech { color: var(--tech); }
+
+/* Footer de listas (paginador) — compartido entre ResourceList y las grillas de tarjetas */
+.i3d-reslist-footer { display: flex; align-items: center; margin-top: var(--sp-4); gap: 12px; }
+.i3d-reslist-count { color: var(--text-muted); font-size: 12px; }
+
+/* Etiqueta "auto / calculado por el sistema" en violeta */
+.i3d-auto-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600;
+  color: var(--electric);
+  background: color-mix(in srgb, var(--electric) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--electric) 30%, transparent);
+  padding: 1px 7px; border-radius: var(--radius-pill);
+}
