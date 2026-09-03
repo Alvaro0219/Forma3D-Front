@@ -5,13 +5,13 @@
         <h1 class="i3d-page-title">Proveedores</h1>
         <p class="i3d-page-subtitle">Contactos de compra de insumos y filamentos</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nuevo proveedor" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nuevo proveedor</q-btn>
     </div>
 
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre, teléfono o email" @update:model-value="onSearch" clearable>
-        <template #prepend><q-icon name="search" /></template>
+        <template #prepend><AppIcon name="search" :size="18" /></template>
       </q-input>
     </div>
 
@@ -20,8 +20,8 @@
       empty-label="No hay proveedores aún." @view="openDetail" @update:page="goToPage"
     >
       <template #actions="{ row }">
-        <q-btn flat dense round icon="edit" size="sm" @click="openEdit(row)" />
-        <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(row)" />
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
       </template>
     </ResourceList>
 
@@ -42,6 +42,7 @@ import { useQuasar } from 'quasar';
 import ResourceList from '../../components/ResourceList.vue';
 import ResourceDialog from '../../components/ResourceDialog.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { fetchProveedores, createProveedor, updateProveedor, deleteProveedor } from '../../services/api.js';
 import '../../styles/dashboard-unified.css';
@@ -55,7 +56,7 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 const columns = [
   { name: 'nombre', label: 'Nombre', field: 'nombre', sortable: true },
   { name: 'telefono', label: 'Teléfono', field: 'telefono', mono: true },
-  { name: 'email', label: 'Email', field: 'email' }
+  { name: 'email', label: 'Email', field: 'email', hideLabelOnCard: true }
 ];
 
 const fields = [

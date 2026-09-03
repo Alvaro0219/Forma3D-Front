@@ -5,7 +5,7 @@
         <h1 class="i3d-page-title">Impresiones</h1>
         <p class="i3d-page-subtitle">Trabajos de impresión, consumo de bobinas y costo real</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nueva impresión" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nueva impresión</q-btn>
     </div>
 
     <div class="i3d-toolbar">
@@ -31,8 +31,24 @@
           />
 
           <div class="i3d-imp-meta">
-            <div><q-icon name="print" size="14px" /> {{ imp.impresora?.modelo || '—' }}</div>
-            <div><q-icon name="grain" size="14px" /> {{ bobinasResumen(imp) }}</div>
+            <div><AppIcon name="print" :size="14" :bordered="false" /> {{ imp.impresora?.modelo || '—' }}</div>
+            <div class="i3d-imp-bobinas">
+              <AppIcon name="grain" :size="14" :bordered="false" />
+              <span v-if="!(imp.filamentos || []).length">—</span>
+              <span v-else-if="imp.filamentos.length === 1" class="i3d-color-chip">
+                <ColorDot :color="imp.filamentos[0].filamento?.color" />
+                <span>{{ bobinaLabel(imp.filamentos[0].filamento) }}</span>
+              </span>
+              <span v-else class="i3d-color-chip">
+                <span class="i3d-color-stack">
+                  <ColorDot
+                    v-for="(b, i) in imp.filamentos" :key="i"
+                    :color="b.filamento?.color" class="i3d-color-stack-dot"
+                  />
+                </span>
+                <span>{{ imp.filamentos.length }} bobinas · {{ imp.pesoTotal }} g</span>
+              </span>
+            </div>
           </div>
 
           <div class="i3d-imp-stats">
@@ -46,13 +62,14 @@
             <span class="mono i3d-imp-cost-val">{{ money(imp.costoTotal) }}</span>
           </div>
           <div v-else-if="imp.estado === 'terminada'" class="i3d-imp-warn">
-            <q-icon name="warning" size="14px" /> Terminada sin descontar stock
+            <AppIcon name="warning" :size="14" color="warning" :bordered="false" /> Terminada sin descontar stock
             <q-btn flat dense no-caps size="sm" label="Descontar ahora" @click="finalizar(imp)" />
           </div>
 
           <div class="i3d-imp-actions">
-            <q-btn flat dense round icon="visibility" size="sm" @click="openDetail(imp)"><q-tooltip>Detalle</q-tooltip></q-btn>
-            <q-btn-dropdown flat dense size="sm" dropdown-icon="swap_horiz" no-icon-animation>
+            <q-btn flat dense round size="sm" @click="openDetail(imp)"><AppIcon name="visibility" :size="16" /><q-tooltip>Detalle</q-tooltip></q-btn>
+            <q-btn-dropdown flat dense size="sm" dropdown-icon="none" no-icon-animation>
+              <template #toggle><AppIcon name="swap_horiz" :size="16" /></template>
               <q-list dense>
                 <q-item v-for="e in estados" :key="e.value" clickable v-close-popup @click="setEstado(imp, e.value)">
                   <q-item-section>{{ e.label }}</q-item-section>
@@ -61,8 +78,8 @@
               <q-tooltip>Cambiar estado</q-tooltip>
             </q-btn-dropdown>
             <q-space />
-            <q-btn flat dense round icon="edit" size="sm" @click="openEdit(imp)" />
-            <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(imp)" />
+            <q-btn flat dense round size="sm" @click="openEdit(imp)"><AppIcon name="edit" :size="16" /></q-btn>
+            <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(imp)"><AppIcon name="delete" :size="16" /></q-btn>
           </div>
         </div>
       </div>
@@ -79,7 +96,7 @@
       <q-card class="i3d-imp-dialog">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editing ? 'Editar impresión' : 'Nueva impresión' }}</div>
-          <q-space /><q-btn icon="close" flat round dense v-close-popup />
+          <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section class="i3d-imp-dialog-body">
@@ -113,31 +130,44 @@
             <div class="row q-col-gutter-sm items-end q-mb-sm">
               <div class="col-7">
                 <q-select v-model="draftBobina.filamento" :options="filamentoOptions" outlined dense clearable use-input
-                          label="Bobina" emit-value map-options @filter="filterFilamentos" />
+                          label="Bobina" emit-value map-options @filter="filterFilamentos">
+                  <template #option="scope">
+                    <q-item v-bind="scope.itemProps">
+                      <q-item-section>
+                        <div class="i3d-color-chip">
+                          <ColorDot :color="scope.opt.color" />
+                          <span>{{ scope.opt.label }}</span>
+                        </div>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                  <template #selected>
+                    <div v-if="selectedBobinaOption" class="i3d-color-chip">
+                      <ColorDot :color="selectedBobinaOption.color" />
+                      <span>{{ selectedBobinaOption.label }}</span>
+                    </div>
+                  </template>
+                </q-select>
               </div>
               <div class="col-3">
                 <q-input v-model.number="draftBobina.gramos" type="number" outlined dense label="Gramos" min="0" />
               </div>
               <div class="col-2">
-                <q-btn color="primary" outline icon="add" class="full-width" @click="addBobina" />
+                <q-btn color="primary" outline dense class="i3d-add-btn i3d-add-btn-icon" @click="addBobina"><AppIcon name="add" :size="16" /></q-btn>
               </div>
             </div>
 
-            <q-markup-table v-if="bobinas.length" flat bordered dense>
-              <thead><tr><th class="text-left">Bobina</th><th class="text-right">Gramos</th><th></th></tr></thead>
-              <tbody>
-                <tr v-for="(b, i) in bobinas" :key="i">
-                  <td>{{ b.nombre }}</td>
-                  <td class="text-right mono">{{ b.gramos }} g</td>
-                  <td class="text-center"><q-btn flat dense round icon="close" size="sm" color="negative" @click="bobinas.splice(i,1)" /></td>
-                </tr>
-                <tr>
-                  <td class="text-weight-bold">Total</td>
-                  <td class="text-right mono text-weight-bold">{{ totalGramos }} g</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </q-markup-table>
+            <ItemsTable
+              v-if="bobinas.length" :rows="bobinas" :columns="bobinaColumns" has-actions
+              foot-label="Total" :foot-value="`${totalGramos} g`"
+            >
+              <template #cell-bobina="{ row }">
+                <div class="i3d-color-chip"><ColorDot :color="row.color" /><span>{{ row.nombre }}</span></div>
+              </template>
+              <template #actions="{ index }">
+                <q-btn flat dense round size="sm" color="negative" @click="bobinas.splice(index,1)"><AppIcon name="close" :size="14" /></q-btn>
+              </template>
+            </ItemsTable>
             <div v-else class="text-grey q-pa-sm">Sin bobinas cargadas.</div>
           </div>
 
@@ -159,15 +189,11 @@
       <template #header-side><StatusBadge :label="detail.estado" :status="detail.estado" /></template>
 
       <div class="text-subtitle2 q-mb-xs">Bobinas consumidas</div>
-      <q-markup-table v-if="detail.filamentos?.length" flat bordered dense class="q-mb-md">
-        <thead><tr><th class="text-left">Bobina</th><th class="text-right">Gramos</th></tr></thead>
-        <tbody>
-          <tr v-for="(b, i) in detail.filamentos" :key="i">
-            <td>{{ bobinaLabel(b.filamento) }}</td>
-            <td class="text-right mono">{{ b.gramos }} g</td>
-          </tr>
-        </tbody>
-      </q-markup-table>
+      <ItemsTable v-if="detail.filamentos?.length" class="q-mb-md" :rows="detail.filamentos" :columns="bobinaColumns">
+        <template #cell-bobina="{ row }">
+          <div class="i3d-color-chip"><ColorDot :color="row.filamento?.color" /><span>{{ bobinaLabel(row.filamento) }}</span></div>
+        </template>
+      </ItemsTable>
       <div v-else class="text-grey q-mb-md">Sin bobinas cargadas.</div>
 
       <template v-if="detail.consumoRegistrado">
@@ -188,6 +214,9 @@ import { useQuasar } from 'quasar';
 import LoadingState from '../../components/LoadingState.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
+import AppIcon from '../../components/AppIcon.vue';
+import ColorDot from '../../components/ColorDot.vue';
+import ItemsTable from '../../components/ItemsTable.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
   fetchImpresiones, createImpresion, updateImpresion, deleteImpresion, registrarConsumoImpresion,
@@ -199,11 +228,11 @@ import '../../styles/dashboard-unified.css';
 const $q = useQuasar();
 const money = (n) => formatMoney(n);
 const estados = [
-  { label: 'Pendiente', value: 'pendiente' },
-  { label: 'Imprimiendo', value: 'imprimiendo' },
-  { label: 'Terminada', value: 'terminada' },
-  { label: 'Fallida', value: 'fallida' },
-  { label: 'Cancelada', value: 'cancelada' }
+  { label: 'PENDIENTE', value: 'pendiente' },
+  { label: 'IMPRIMIENDO', value: 'imprimiendo' },
+  { label: 'TERMINADA', value: 'terminada' },
+  { label: 'FALLIDA', value: 'fallida' },
+  { label: 'CANCELADA', value: 'cancelada' }
 ];
 
 const { items, pagination, loading, saving, reload, goToPage, create, update, remove } = useCrudResource({
@@ -219,6 +248,10 @@ const detail = ref({});
 
 const form = ref(emptyForm());
 const bobinas = ref([]);
+const bobinaColumns = [
+  { name: 'bobina', label: 'Bobina' },
+  { name: 'gramos', label: 'Gramos', align: 'right', mono: true, format: (v) => `${v} g` }
+];
 const draftBobina = ref({ filamento: null, gramos: null });
 
 const productos = ref([]);
@@ -247,12 +280,7 @@ const progressValue = (imp) => {
 };
 
 const bobinaLabel = (f) => (f ? `${f.identificadorBobina || ''} ${f.marca || ''} ${f.tipo || ''} ${f.color || ''}`.trim() : '—');
-const bobinasResumen = (imp) => {
-  const list = imp.filamentos || [];
-  if (!list.length) return '—';
-  if (list.length === 1) return bobinaLabel(list[0].filamento);
-  return `${list.length} bobinas · ${imp.pesoTotal} g`;
-};
+const selectedBobinaOption = computed(() => filamentoOptions.value.find((o) => o.value === draftBobina.value.filamento) || null);
 
 const detailFields = computed(() => {
   const d = detail.value;
@@ -287,6 +315,7 @@ function openEdit(imp) {
   bobinas.value = (imp.filamentos || []).map((b) => ({
     filamento: b.filamento?._id || b.filamento,
     nombre: bobinaLabel(b.filamento),
+    color: b.filamento?.color,
     gramos: b.gramos
   }));
   resetDraft();
@@ -301,7 +330,7 @@ function addBobina() {
   if (gr <= 0) { $q.notify({ type: 'warning', message: 'Ingresá los gramos consumidos' }); return; }
   if (bobinas.value.some((b) => b.filamento === id)) { $q.notify({ type: 'warning', message: 'Esa bobina ya está en la lista' }); return; }
   const f = filamentos.value.find((x) => x._id === id);
-  bobinas.value.push({ filamento: id, nombre: bobinaLabel(f), gramos: gr });
+  bobinas.value.push({ filamento: id, nombre: bobinaLabel(f), color: f?.color, gramos: gr });
   resetDraft();
 }
 
@@ -368,12 +397,13 @@ function filterProductos(val, update) {
     productoOptions.value = productos.value.filter((p) => prodLabel(p).toLowerCase().includes(n)).map((p) => ({ label: prodLabel(p), value: p._id }));
   });
 }
+const filamentoToOption = (f) => ({ label: `${bobinaLabel(f)} — ${f.pesoDisponible} g`, value: f._id, color: f.color });
 function filterFilamentos(val, update) {
   update(() => {
     const n = (val || '').toLowerCase();
     filamentoOptions.value = filamentos.value
       .filter((f) => bobinaLabel(f).toLowerCase().includes(n))
-      .map((f) => ({ label: `${bobinaLabel(f)} — ${f.pesoDisponible} g`, value: f._id }));
+      .map(filamentoToOption);
   });
 }
 
@@ -386,7 +416,7 @@ onMounted(async () => {
   filamentos.value = fils.items || [];
   impresoras.value = imps.items || [];
   productoOptions.value = productos.value.map((p) => ({ label: prodLabel(p), value: p._id }));
-  filamentoOptions.value = filamentos.value.map((f) => ({ label: `${bobinaLabel(f)} — ${f.pesoDisponible} g`, value: f._id }));
+  filamentoOptions.value = filamentos.value.map(filamentoToOption);
   impresoraOptions.value = impresoras.value.map((i) => ({ label: i.modelo, value: i._id }));
 });
 </script>
@@ -401,8 +431,13 @@ onMounted(async () => {
 .i3d-imp-card:hover { border-color: var(--border-strong); }
 .i3d-imp-top { display: flex; align-items: center; justify-content: space-between; }
 .i3d-imp-num { color: var(--text-muted); font-size: 13px; font-weight: 600; }
-.i3d-imp-title { font-family: var(--font-display); font-weight: 600; font-size: 16px; margin-top: 6px; color: var(--text-primary); }
+.i3d-imp-title { font-weight: 600; font-size: 16px; margin-top: 6px; color: var(--text-primary); }
 .i3d-imp-meta { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+.i3d-imp-bobinas { display: flex; align-items: center; gap: 6px; }
+.i3d-color-chip { display: inline-flex; align-items: center; gap: 6px; }
+.i3d-color-stack { display: inline-flex; align-items: center; }
+.i3d-color-stack-dot { margin-left: -6px; }
+.i3d-color-stack-dot:first-child { margin-left: 0; }
 .i3d-imp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
 .i3d-imp-stats > div { display: flex; flex-direction: column; }
 .i3d-imp-k { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
@@ -420,6 +455,6 @@ onMounted(async () => {
 .i3d-imp-dialog-body { max-height: 70vh; overflow-y: auto; }
 .i3d-bob { border-top: 1px solid var(--border); padding-top: 14px; }
 .i3d-bob-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-.i3d-bob-head > span:first-child { font-family: var(--font-display); font-weight: 600; }
+.i3d-bob-head > span:first-child { font-weight: 600; }
 .i3d-bob-hint { font-size: 11px; color: var(--text-muted); }
 </style>

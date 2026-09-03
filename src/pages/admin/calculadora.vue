@@ -23,6 +23,7 @@
             <div class="col-6"><q-input v-model.number="input.manoObra" type="number" outlined dense label="Mano de obra /hora" prefix="$" /></div>
             <div class="col-6"><q-input v-model.number="input.embalaje" type="number" outlined dense label="Embalaje" prefix="$" /></div>
             <div class="col-6"><q-input v-model.number="input.otros" type="number" outlined dense label="Otros costos" prefix="$" /></div>
+            <div class="col-6"><q-input v-model.number="input.cantidadPiezas" type="number" outlined dense label="Cantidad de piezas" min="1" /></div>
           </div>
 
           <q-separator class="q-my-md" />
@@ -39,7 +40,7 @@
             </div>
           </div>
 
-          <q-btn color="primary" icon="calculate" label="Calcular" class="q-mt-md" :loading="loading" @click="calcular" />
+          <q-btn color="primary" class="q-mt-md" :loading="loading" @click="calcular"><AppIcon name="calculate" :size="16" class="q-mr-xs" />Calcular</q-btn>
         </div>
       </div>
 
@@ -48,7 +49,7 @@
         <div class="i3d-section-card i3d-result">
           <div class="i3d-result-head">
             <span>Resultado</span>
-            <span class="i3d-auto-tag" v-if="resultado"><q-icon name="auto_awesome" size="12px" /> auto</span>
+            <span class="i3d-auto-tag" v-if="resultado"><AppIcon name="auto_awesome" :size="12" :bordered="false" /> auto</span>
           </div>
           <!-- El desglose se apila como capas que se construyen de abajo hacia arriba. -->
           <div v-if="resultado" class="i3d-layers" :key="calcVersion">
@@ -61,6 +62,7 @@
             <div class="i3d-result-row"><span>Otros</span><b class="mono">{{ money(resultado.costoOtros) }}</b></div>
             <div class="i3d-result-row i3d-total"><span>Costo total</span><b class="mono">{{ money(resultado.costoTotal) }}</b></div>
             <div class="i3d-result-row i3d-highlight"><span>Precio sugerido</span><b class="mono">{{ money(resultado.precioSugerido) }}</b></div>
+            <div v-if="input.cantidadPiezas > 1" class="i3d-result-row i3d-highlight"><span>Precio por pieza ({{ input.cantidadPiezas }})</span><b class="mono">{{ money(precioPorPieza) }}</b></div>
             <div class="i3d-result-row text-positive"><span>Ganancia</span><b class="mono">{{ money(resultado.ganancia) }}</b></div>
             <div class="i3d-result-row text-positive"><span>Margen</span><b class="mono">{{ resultado.margen }}%</b></div>
           </div>
@@ -72,9 +74,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { calcularCosto, fetchConfig } from '../../services/api.js';
+import AppIcon from '../../components/AppIcon.vue';
 import { formatMoney } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
 
@@ -84,11 +87,16 @@ const money = (n) => formatMoney(n);
 const input = ref({
   precioRollo: 25000, pesoRollo: 1000, gramosUtilizados: 0, tiempoImpresion: 0,
   consumoElectrico: 0.15, precioKwh: 0, costoHoraMaquina: 0, manoObra: 0,
-  embalaje: 0, otros: 0, modo: 'margen', margenDeseado: 60, gananciaDeseada: 0
+  embalaje: 0, otros: 0, modo: 'margen', margenDeseado: 60, gananciaDeseada: 0, cantidadPiezas: 1
 });
 const resultado = ref(null);
 const loading = ref(false);
 const calcVersion = ref(0);
+
+const precioPorPieza = computed(() => {
+  const n = Number(input.value.cantidadPiezas) || 1;
+  return resultado.value ? resultado.value.precioSugerido / n : 0;
+});
 
 async function calcular() {
   loading.value = true;
@@ -118,7 +126,7 @@ onMounted(async () => {
 .i3d-result { position: sticky; top: 76px; }
 .i3d-result-head {
   display: flex; align-items: center; justify-content: space-between;
-  font-family: var(--font-display); font-weight: 600; font-size: 16px;
+  font-weight: 600; font-size: 16px;
   color: var(--text-primary); margin-bottom: 16px;
 }
 .i3d-result-row {

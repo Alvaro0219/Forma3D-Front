@@ -5,7 +5,7 @@
         <h1 class="i3d-page-title">Pedidos</h1>
         <p class="i3d-page-subtitle">Centro del flujo comercial y productivo</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nuevo pedido" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nuevo pedido</q-btn>
     </div>
 
     <div class="i3d-toolbar">
@@ -24,11 +24,12 @@
                   @update:model-value="v => changeEstado(row, v)" style="min-width:130px" @click.stop />
       </template>
       <template #actions="{ row }">
-        <q-btn flat dense round icon="point_of_sale" color="positive" size="sm" :disable="!!row.venta" @click="convertir(row)">
+        <q-btn flat dense round color="positive" size="sm" :disable="!!row.venta" @click="convertir(row)">
+          <AppIcon name="point_of_sale" :size="16" />
           <q-tooltip>{{ row.venta ? 'Ya facturado' : 'Registrar venta' }}</q-tooltip>
         </q-btn>
-        <q-btn flat dense round icon="edit" size="sm" @click="openEdit(row)" />
-        <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(row)" />
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
       </template>
     </ResourceList>
 
@@ -39,16 +40,8 @@
     >
       <template #header-side><StatusBadge :label="current.estado" :status="current.estado" /></template>
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
-      <q-markup-table flat bordered dense class="q-mb-md">
-        <thead><tr><th class="text-left">Producto</th><th class="text-right">Cant.</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th></tr></thead>
-        <tbody>
-          <tr v-for="(it, i) in current.items || []" :key="i">
-            <td>{{ it.nombre }}</td><td class="text-right mono">{{ it.cantidad }}</td>
-            <td class="text-right mono">{{ money(it.precioUnitario) }}</td><td class="text-right mono">{{ money(it.subtotal) }}</td>
-          </tr>
-        </tbody>
-      </q-markup-table>
-      <div v-if="current.venta" class="text-positive"><q-icon name="check_circle" size="16px" /> Venta registrada</div>
+      <ItemsTable class="q-mb-md" :rows="current.items || []" :columns="itemColumns" />
+      <div v-if="current.venta" class="text-positive"><AppIcon name="check_circle" :size="16" color="success" /> Venta registrada</div>
       <div v-if="current.notas" class="q-mt-sm"><div class="i3d-lc-k">Notas</div>{{ current.notas }}</div>
     </RecordDetailDialog>
 
@@ -57,7 +50,7 @@
       <q-card class="i3d-order-card">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editing ? 'Editar pedido' : 'Nuevo pedido' }}</div>
-          <q-space /><q-btn icon="close" flat round dense v-close-popup />
+          <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section class="i3d-order-body">
@@ -91,6 +84,8 @@ import ResourceList from '../../components/ResourceList.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import ItemEditor from '../../components/ItemEditor.vue';
+import ItemsTable from '../../components/ItemsTable.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
   fetchPedidos, createPedido, updatePedido, deletePedido, cambiarEstadoPedido,
@@ -101,7 +96,14 @@ import '../../styles/dashboard-unified.css';
 
 const $q = useQuasar();
 const money = (n) => formatMoney(n);
-const estados = ['Pendiente', 'Diseno', 'Preparando', 'Imprimiendo', 'Listo', 'Entregado', 'Cancelado'].map((e) => ({ label: e, value: e }));
+
+const itemColumns = [
+  { name: 'nombre', label: 'Producto' },
+  { name: 'cantidad', label: 'Cant.', align: 'right', mono: true },
+  { name: 'precioUnitario', label: 'Precio', align: 'right', mono: true, format: money },
+  { name: 'subtotal', label: 'Subtotal', align: 'right', mono: true, format: money }
+];
+const estados = ['Pendiente', 'Diseno', 'Preparando', 'Imprimiendo', 'Listo', 'Entregado', 'Cancelado'].map((e) => ({ label: e.toUpperCase(), value: e }));
 
 const { items, pagination, loading, saving, reload, goToPage, create, update, remove } = useCrudResource({
   fetchFn: fetchPedidos, createFn: createPedido, updateFn: updatePedido, deleteFn: deletePedido, label: 'el pedido'

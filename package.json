@@ -9,6 +9,7 @@
     "preview": "vite preview --port 5173"
   },
   "dependencies": {
+    "@lucide/vue": "^1.39.0",
     "@quasar/extras": "^1.16.14",
     "axios": "^1.6.8",
     "pinia": "^2.1.7",

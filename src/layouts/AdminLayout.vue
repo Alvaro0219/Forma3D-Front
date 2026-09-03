@@ -20,7 +20,7 @@
               class="i3d-nav-link"
               :class="{ active: isActive(item.path) }"
             >
-              <q-icon :name="item.icon" size="20px" />
+              <AppIcon :name="item.icon" :size="20" />
               <span class="i3d-nav-label">{{ item.label }}</span>
               <q-tooltip v-if="collapsed" anchor="center right" self="center left">{{ item.label }}</q-tooltip>
             </router-link>
@@ -30,7 +30,7 @@
 
       <div class="i3d-sidebar-footer">
         <a href="/tienda" target="_blank" class="i3d-nav-link">
-          <q-icon name="storefront" size="20px" />
+          <AppIcon name="storefront" :size="20" />
           <span class="i3d-nav-label">Ver tienda</span>
         </a>
       </div>
@@ -39,46 +39,30 @@
     <!-- Main -->
     <div class="i3d-main">
       <header class="i3d-topbar">
-        <q-btn flat round dense icon="menu_open" class="i3d-collapse-btn" @click="toggleCollapse" />
-        <q-btn flat round dense icon="menu" class="i3d-mobile-menu-btn" @click="mobileMenu = true" />
-
-        <button class="i3d-search" @click="palette = true">
-          <q-icon name="search" size="18px" />
-          <span>Buscar productos, clientes, pedidos…</span>
-          <kbd class="i3d-kbd">Ctrl K</kbd>
-        </button>
+        <q-btn flat round dense class="i3d-collapse-btn" @click="toggleCollapse"><AppIcon name="menu_open" :size="20" /></q-btn>
+        <q-btn flat round dense class="i3d-mobile-menu-btn" @click="mobileMenu = true"><AppIcon name="menu" :size="20" /></q-btn>
 
         <q-space />
 
-        <q-btn-dropdown flat no-caps class="i3d-quick-add" color="primary" dropdown-icon="none">
-          <template #label>
-            <q-icon name="add" size="20px" /><span class="i3d-quick-add-txt">Nuevo</span>
-          </template>
-          <q-list class="i3d-quick-list">
-            <q-item v-for="a in quickActions" :key="a.path" clickable v-close-popup @click="go(a.path)">
-              <q-item-section avatar><q-icon :name="a.icon" /></q-item-section>
-              <q-item-section>{{ a.label }}</q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
-
-        <q-btn flat round dense :icon="theme.isDark ? 'light_mode' : 'dark_mode'" @click="theme.toggle()">
+        <q-btn flat round dense @click="theme.toggle()">
+          <AppIcon :name="theme.isDark ? 'light_mode' : 'dark_mode'" :size="18" />
           <q-tooltip>{{ theme.isDark ? 'Modo claro' : 'Modo oscuro' }}</q-tooltip>
         </q-btn>
 
-        <q-btn-dropdown flat no-caps class="i3d-user-btn" dropdown-icon="expand_more">
+        <q-btn-dropdown flat no-caps class="i3d-user-btn" dropdown-icon="none">
           <template #label>
             <div class="i3d-user-chip">
-              <q-icon name="account_circle" size="22px" />
+              <AppIcon name="account_circle" :size="22" />
               <div class="i3d-user-meta">
                 <span class="i3d-user-name">{{ auth.user?.name }}</span>
                 <span class="i3d-user-role mono">{{ auth.user?.role }}</span>
               </div>
             </div>
+            <AppIcon name="expand_more" :size="16" :bordered="false" class="i3d-user-caret" />
           </template>
           <q-list>
             <q-item clickable v-close-popup @click="logout">
-              <q-item-section avatar><q-icon name="logout" /></q-item-section>
+              <q-item-section avatar><AppIcon name="logout" :size="18" /></q-item-section>
               <q-item-section>Cerrar sesión</q-item-section>
             </q-item>
           </q-list>
@@ -95,7 +79,7 @@
     </div>
 
     <!-- Drawer mobile -->
-    <q-dialog v-model="mobileMenu" position="left">
+    <q-dialog v-model="mobileMenu" position="left" full-height>
       <q-card class="i3d-drawer">
         <div class="i3d-brand"><span class="i3d-brand-name">{{ nombreNegocio }}</span></div>
         <q-list>
@@ -105,25 +89,23 @@
               v-for="item in group.items" :key="item.path"
               clickable v-close-popup :active="isActive(item.path)" @click="go(item.path)"
             >
-              <q-item-section avatar><q-icon :name="item.icon" /></q-item-section>
+              <q-item-section avatar><AppIcon :name="item.icon" :size="18" /></q-item-section>
               <q-item-section>{{ item.label }}</q-item-section>
             </q-item>
           </template>
         </q-list>
       </q-card>
     </q-dialog>
-
-    <CommandPalette v-model="palette" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useThemeStore } from '../stores/theme.js';
 import { fetchConfig } from '../services/api.js';
-import CommandPalette from '../components/CommandPalette.vue';
+import AppIcon from '../components/AppIcon.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -131,7 +113,6 @@ const auth = useAuthStore();
 const theme = useThemeStore();
 
 const mobileMenu = ref(false);
-const palette = ref(false);
 const collapsed = ref(loadCollapsed());
 const nombreNegocio = ref('Gestión 3D');
 
@@ -174,37 +155,16 @@ const navGroups = computed(() => allGroups.map((g) => ({
   items: g.items.filter((i) => !i.admin || auth.isAdmin)
 })));
 
-const quickActions = computed(() => {
-  const base = [
-    { path: '/admin/ventas', label: 'Nueva venta', icon: 'point_of_sale' },
-    { path: '/admin/pedidos', label: 'Nuevo pedido', icon: 'receipt_long' },
-    { path: '/admin/productos', label: 'Nuevo producto', icon: 'category' },
-    { path: '/admin/filamentos', label: 'Nueva bobina', icon: 'grain' },
-    { path: '/admin/impresiones', label: 'Nueva impresión', icon: 'print' }
-  ];
-  if (auth.isAdmin) base.splice(2, 0, { path: '/admin/compras', label: 'Nueva compra', icon: 'shopping_cart' });
-  return base;
-});
-
 function isActive(path) { return route.path === path || route.path.startsWith(path + '/'); }
 function go(path) { router.push(path); }
 function logout() { auth.logout(); router.push('/login'); }
 
-function onKey(e) {
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-    e.preventDefault();
-    palette.value = true;
-  }
-}
-
 onMounted(async () => {
-  window.addEventListener('keydown', onKey);
   try {
     const cfg = await fetchConfig();
     if (cfg?.nombreNegocio) nombreNegocio.value = cfg.nombreNegocio;
   } catch { /* default */ }
 });
-onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <style scoped>
@@ -229,7 +189,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 .i3d-brand-mark { width: 26px; height: 26px; flex-shrink: 0; }
 .i3d-brand-mark svg { width: 100%; height: 100%; }
 .i3d-brand-name {
-  font-family: var(--font-display); font-weight: 700; font-size: 15px;
+  font-weight: 700; font-size: 15px;
   color: var(--text-primary); white-space: nowrap; overflow: hidden;
 }
 .i3d-shell--collapsed .i3d-brand-name { display: none; }
@@ -274,30 +234,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 .i3d-collapse-btn { color: var(--text-secondary); }
 .i3d-mobile-menu-btn { display: none; color: var(--text-secondary); }
 
-.i3d-search {
-  display: flex; align-items: center; gap: 10px;
-  height: 38px; padding: 0 12px; min-width: 220px; max-width: 420px; flex: 1;
-  background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text-muted);
-  cursor: pointer; font-size: 13px; font-family: var(--font-ui);
-  transition: border-color var(--dur-micro) var(--ease-standard);
-}
-.i3d-search:hover { border-color: var(--border-strong); }
-.i3d-search span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.i3d-kbd {
-  font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);
-  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px;
-}
-
-.i3d-quick-add-txt { margin-left: 4px; }
 .i3d-user-chip { display: flex; align-items: center; gap: 8px; }
 .i3d-user-meta { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
 .i3d-user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .i3d-user-role { font-size: 11px; color: var(--text-muted); text-transform: capitalize; }
+.i3d-user-caret { color: var(--text-muted); margin-left: 2px; }
 
 .i3d-content { flex: 1; min-width: 0; }
 
-.i3d-drawer { width: 270px; max-width: 82vw; height: 100%; background: var(--bg-surface); }
+.i3d-drawer { width: 270px; max-width: 82vw; height: 100%; background: var(--bg-surface); border-radius: 0 !important; }
 
 /* Transición de ruta */
 .i3d-route-enter-active { transition: opacity var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard); }
@@ -315,10 +260,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   .i3d-mobile-menu-btn { display: inline-flex; }
   .i3d-user-meta { display: none; }
 }
-@media (max-width: 599px) {
-  .i3d-quick-add-txt { display: none; }
-  .i3d-search span { display: none; }
-  .i3d-search { min-width: 44px; flex: 0 0 auto; }
-  .i3d-kbd { display: none; }
+</style>
+
+
+<style>
+/* Quasar aplica --minimized (padding 24px) junto con --fullheight; sin quitar ese padding
+   el drawer queda "colgando" con hueco arriba/abajo en vez de ocupar todo el alto.
+   .q-dialog__inner es un wrapper interno de Quasar, ancestro de nuestro contenido: el scoped
+   CSS (ni :deep()) no puede alcanzarlo, por eso este bloque global. */
+.q-dialog__inner--left.q-dialog__inner--fullheight {
+  padding: 0 !important;
 }
 </style>

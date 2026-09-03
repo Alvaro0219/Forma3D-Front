@@ -5,13 +5,13 @@
         <h1 class="i3d-page-title">Biblioteca de archivos 3D</h1>
         <p class="i3d-page-subtitle">Diseños con versionado (v1, v2, v3…) y archivos STL / 3MF</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nuevo archivo" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nuevo archivo</q-btn>
     </div>
 
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350" label="Buscar por nombre o código"
                @update:model-value="onSearch" clearable>
-        <template #prepend><q-icon name="search" /></template>
+        <template #prepend><AppIcon name="search" :size="18" /></template>
       </q-input>
     </div>
 
@@ -20,7 +20,7 @@
         <div v-for="a in items" :key="a._id" class="i3d-arc-card">
           <div class="i3d-arc-preview">
             <img v-if="a.fotos && a.fotos.length" :src="a.fotos[0]" :alt="a.nombre" />
-            <q-icon v-else name="view_in_ar" size="42px" color="grey-6" />
+            <AppIcon v-else name="view_in_ar" :size="36" color="muted" />
             <span v-if="currentVersion(a)" class="i3d-arc-vbadge mono">v{{ currentVersion(a).numero }}</span>
           </div>
           <div class="i3d-arc-body">
@@ -29,10 +29,10 @@
             <div class="i3d-arc-sub">{{ (a.versiones || []).length }} versión(es)</div>
           </div>
           <div class="i3d-arc-actions">
-            <q-btn flat dense no-caps size="sm" icon="layers" label="Versiones" @click="openVersions(a)" />
+            <q-btn flat dense no-caps size="sm" @click="openVersions(a)"><AppIcon name="layers" :size="15" class="q-mr-xs" />Versiones</q-btn>
             <q-space />
-            <q-btn flat dense round icon="edit" size="sm" @click="openEdit(a)" />
-            <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(a)" />
+            <q-btn flat dense round size="sm" @click="openEdit(a)"><AppIcon name="edit" :size="16" /></q-btn>
+            <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(a)"><AppIcon name="delete" :size="16" /></q-btn>
           </div>
         </div>
       </div>
@@ -49,7 +49,7 @@
       <q-card class="i3d-arc-dialog">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editing ? 'Editar archivo' : 'Nuevo archivo 3D' }}</div>
-          <q-space /><q-btn icon="close" flat round dense v-close-popup />
+          <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section class="i3d-arc-dialog-body">
@@ -77,11 +77,11 @@
             <div class="i3d-arc-thumbs">
               <div v-for="(url, i) in form.fotos" :key="i" class="i3d-arc-thumb">
                 <img :src="url" alt="foto" />
-                <q-btn dense flat round icon="close" size="xs" color="negative" @click="form.fotos.splice(i,1)" />
+                <q-btn dense flat round size="xs" color="negative" @click="form.fotos.splice(i,1)"><AppIcon name="close" :size="12" /></q-btn>
               </div>
               <q-file :model-value="null" accept="image/jpeg,image/png,image/webp" outlined dense
                       class="i3d-arc-addfoto" label="+ Foto" :loading="img.uploading" @update:model-value="onFotoPick">
-                <template #prepend><q-icon name="add_photo_alternate" /></template>
+                <template #prepend><AppIcon name="add_photo_alternate" :size="18" /></template>
               </q-file>
             </div>
             <q-linear-progress v-if="img.uploading" :value="img.progress/100" color="primary" size="4px" class="q-mt-xs" />
@@ -100,7 +100,7 @@
       <q-card class="i3d-arc-dialog" v-if="vTarget">
         <q-card-section class="row items-center">
           <div class="text-h6">Versiones — {{ vTarget.nombre }}</div>
-          <q-space /><q-btn icon="close" flat round dense v-close-popup />
+          <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section class="i3d-arc-dialog-body">
@@ -116,8 +116,8 @@
                 </div>
                 <div v-if="v.cambios" class="i3d-tl-changes">{{ v.cambios }}</div>
                 <div class="i3d-tl-files">
-                  <a v-if="v.archivoStl" :href="v.archivoStl" target="_blank" class="i3d-file-chip"><q-icon name="description" size="14px" /> STL</a>
-                  <a v-if="v.archivo3mf" :href="v.archivo3mf" target="_blank" class="i3d-file-chip"><q-icon name="description" size="14px" /> 3MF</a>
+                  <a v-if="v.archivoStl" :href="v.archivoStl" target="_blank" class="i3d-file-chip"><AppIcon name="description" :size="13" :bordered="false" /> STL</a>
+                  <a v-if="v.archivo3mf" :href="v.archivo3mf" target="_blank" class="i3d-file-chip"><AppIcon name="description" :size="13" :bordered="false" /> 3MF</a>
                   <q-btn v-if="!v.esActual" flat dense size="sm" no-caps label="Marcar actual" @click="setActual(v.numero)" />
                 </div>
               </div>
@@ -134,16 +134,16 @@
             <div class="col-6">
               <q-file :model-value="null" accept=".stl" outlined dense label="Archivo STL"
                       :loading="modelUp.uploading && upTarget==='stl'" @update:model-value="(f)=>onModelPick('stl', f)">
-                <template #prepend><q-icon name="upload_file" /></template>
+                <template #prepend><AppIcon name="upload_file" :size="18" /></template>
               </q-file>
-              <div v-if="newVersion.archivoStl" class="i3d-uploaded mono"><q-icon name="check" size="14px" color="positive" /> STL cargado</div>
+              <div v-if="newVersion.archivoStl" class="i3d-uploaded mono"><AppIcon name="check" :size="14" color="success" :bordered="false" /> STL cargado</div>
             </div>
             <div class="col-6">
               <q-file :model-value="null" accept=".3mf" outlined dense label="Archivo 3MF"
                       :loading="modelUp.uploading && upTarget==='3mf'" @update:model-value="(f)=>onModelPick('3mf', f)">
-                <template #prepend><q-icon name="upload_file" /></template>
+                <template #prepend><AppIcon name="upload_file" :size="18" /></template>
               </q-file>
-              <div v-if="newVersion.archivo3mf" class="i3d-uploaded mono"><q-icon name="check" size="14px" color="positive" /> 3MF cargado</div>
+              <div v-if="newVersion.archivo3mf" class="i3d-uploaded mono"><AppIcon name="check" :size="14" color="success" :bordered="false" /> 3MF cargado</div>
             </div>
           </div>
           <q-linear-progress v-if="modelUp.uploading" :value="modelUp.progress/100" color="primary" size="6px" class="q-mt-sm rounded-borders" />
@@ -163,6 +163,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import LoadingState from '../../components/LoadingState.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { useImageUpload } from '../../composables/useImageUpload.js';
 import { useFileUpload } from '../../composables/useFileUpload.js';
@@ -315,7 +316,7 @@ onMounted(async () => {
 .i3d-arc-preview img { width: 100%; height: 100%; object-fit: cover; }
 .i3d-arc-vbadge { position: absolute; top: 8px; right: 8px; background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--tech); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); }
 .i3d-arc-body { padding: 12px 12px 8px; flex: 1; }
-.i3d-arc-name { font-family: var(--font-display); font-weight: 600; color: var(--text-primary); }
+.i3d-arc-name { font-weight: 600; color: var(--text-primary); }
 .i3d-arc-meta { font-size: 12px; color: var(--text-muted); margin: 2px 0; }
 .i3d-arc-sub { font-size: 12px; color: var(--text-secondary); }
 .i3d-arc-actions { display: flex; align-items: center; gap: 2px; padding: 6px 8px; border-top: 1px solid var(--border); }
@@ -341,6 +342,6 @@ onMounted(async () => {
 .i3d-tl-date { font-size: 12px; color: var(--text-muted); margin-left: auto; }
 .i3d-tl-changes { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
 .i3d-tl-files { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-.i3d-file-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--tech); font-family: var(--font-mono); }
+.i3d-file-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--tech); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .i3d-imp-k { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
 </style>

@@ -30,12 +30,13 @@
                 :loading="uploading"
                 @update:model-value="onLogoPick"
               >
-                <template #prepend><q-icon name="cloud_upload" /></template>
+                <template #prepend><AppIcon name="cloud_upload" :size="18" /></template>
               </q-file>
               <q-linear-progress v-if="uploading" :value="progress / 100" color="primary" size="6px" class="q-mt-xs rounded-borders" />
               <div v-if="cfg.logo" class="i3d-logo-preview">
                 <img :src="cfg.logo" alt="Logo" />
-                <q-btn dense flat round icon="close" size="sm" color="negative" @click="cfg.logo = ''">
+                <q-btn dense flat round size="sm" color="negative" @click="cfg.logo = ''">
+                  <AppIcon name="close" :size="14" />
                   <q-tooltip>Quitar logo</q-tooltip>
                 </q-btn>
               </div>
@@ -72,10 +73,10 @@
               <q-item v-for="imp in impresoras" :key="imp._id">
                 <q-item-section>
                   <q-item-label>{{ imp.modelo }}</q-item-label>
-                  <q-item-label caption>{{ imp.consumo }} kW · {{ money(imp.costoHora) }}/h · {{ imp.estado }}</q-item-label>
+                  <q-item-label caption>{{ imp.consumo }} kW · {{ money(imp.costoHora) }}/h · <span class="text-uppercase">{{ imp.estado }}</span></q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-btn flat dense round icon="delete" color="negative" @click="removeImpresora(imp)" />
+                  <q-btn flat dense round color="negative" @click="removeImpresora(imp)"><AppIcon name="delete" :size="16" /></q-btn>
                 </q-item-section>
               </q-item>
               <q-item v-if="!impresoras.length"><q-item-section class="text-grey">Sin impresoras cargadas</q-item-section></q-item>
@@ -84,14 +85,14 @@
               <div class="col-5"><q-input v-model="newImp.modelo" outlined dense label="Modelo" /></div>
               <div class="col-3"><q-input v-model.number="newImp.consumo" type="number" outlined dense label="kW" /></div>
               <div class="col-2"><q-input v-model.number="newImp.costoHora" type="number" outlined dense label="$/h" /></div>
-              <div class="col-2"><q-btn color="primary" dense icon="add" @click="addImpresora" /></div>
+              <div class="col-2"><q-btn color="primary" dense @click="addImpresora"><AppIcon name="add" :size="16" /></q-btn></div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="q-mt-md text-right">
-        <q-btn color="primary" icon="save" label="Guardar configuración" :loading="saving" @click="save" />
+        <q-btn color="primary" :loading="saving" @click="save"><AppIcon name="save" :size="16" class="q-mr-xs" />Guardar configuración</q-btn>
       </div>
     </LoadingState>
   </div>
@@ -101,6 +102,7 @@
 import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import LoadingState from '../../components/LoadingState.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import {
   fetchConfig, updateConfig, fetchImpresoras, createImpresora, deleteImpresora
 } from '../../services/api.js';

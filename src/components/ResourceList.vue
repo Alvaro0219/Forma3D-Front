@@ -16,7 +16,8 @@
           </template>
           <template #body-cell-__actions="props">
             <q-td :props="props" class="text-right i3d-reslist-actions">
-              <q-btn flat dense round icon="visibility" size="sm" @click="$emit('view', props.row)">
+              <q-btn flat dense round size="sm" @click="$emit('view', props.row)">
+                <AppIcon name="visibility" :size="16" />
                 <q-tooltip>Ver</q-tooltip>
               </q-btn>
               <slot name="actions" :row="props.row" />
@@ -32,7 +33,7 @@
             <div class="i3d-list-card-title">{{ cardTitle ? cardTitle(row) : formatCell(columns[0], row) }}</div>
             <div class="i3d-list-card-rows">
               <div v-for="col in bodyColumns" :key="col.name" class="i3d-list-card-row">
-                <span class="i3d-lc-k">{{ col.label }}</span>
+                <span v-if="!col.hideLabelOnCard" class="i3d-lc-k">{{ col.label }}</span>
                 <span class="i3d-lc-v" :class="col.mono ? 'mono' : ''">
                   <slot :name="`cell-${col.name}`" :row="row" :value="row[col.field]">
                     {{ formatCell(col, row) }}
@@ -42,7 +43,8 @@
             </div>
           </slot>
           <div class="i3d-list-card-actions" @click.stop>
-            <q-btn flat dense round icon="visibility" size="sm" color="primary" @click="$emit('view', row)">
+            <q-btn flat dense round size="sm" color="primary" @click="$emit('view', row)">
+              <AppIcon name="visibility" :size="16" color="accent" />
               <q-tooltip>Ver</q-tooltip>
             </q-btn>
             <slot name="actions" :row="row" />
@@ -69,6 +71,7 @@
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
 import LoadingState from './LoadingState.vue';
+import AppIcon from './AppIcon.vue';
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -88,7 +91,8 @@ const $q = useQuasar();
 // Pantallas grandes (>= 1024): tabla. Chicas: tarjetas.
 const isDesktop = computed(() => !props.alwaysCards && $q.screen.gt.sm);
 
-const bodyColumns = computed(() => props.columns.filter((c) => c.name !== '__actions'));
+// La primera columna ya se muestra como titulo de la tarjeta: no repetirla como fila con leyenda.
+const bodyColumns = computed(() => props.columns.filter((c) => c.name !== '__actions' && c.name !== props.columns[0]?.name));
 
 const tableColumns = computed(() => [
   ...props.columns.map((c) => ({
@@ -115,11 +119,11 @@ function formatCell(col, row) {
   transition: border-color var(--dur-micro) var(--ease-standard);
 }
 .i3d-list-card:active { border-color: var(--accent); }
-.i3d-list-card-title { font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--text-primary); margin-bottom: 10px; }
+.i3d-list-card-title { font-weight: 600; font-size: 16px; color: var(--text-primary); margin-bottom: 10px; }
 .i3d-list-card-rows { display: flex; flex-direction: column; gap: 6px; }
 .i3d-list-card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; }
 .i3d-lc-k { color: var(--text-muted); text-transform: uppercase; font-size: 10px; letter-spacing: .04em; flex-shrink: 0; }
-.i3d-lc-v { color: var(--text-primary); text-align: right; }
+.i3d-lc-v { color: var(--text-primary); text-align: right; flex: 1; }
 .i3d-list-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 2px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 
 .i3d-reslist-footer { display: flex; align-items: center; margin-top: 16px; gap: 12px; }

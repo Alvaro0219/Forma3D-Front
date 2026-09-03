@@ -6,9 +6,9 @@
         <p class="i3d-page-subtitle">Resumen operativo y financiero</p>
       </div>
       <div class="i3d-quick">
-        <q-btn color="primary" unelevated icon="point_of_sale" label="Venta" to="/admin/ventas" no-caps />
-        <q-btn outline color="secondary" icon="receipt_long" label="Pedido" to="/admin/pedidos" no-caps />
-        <q-btn outline color="secondary" icon="shopping_cart" label="Compra" to="/admin/compras" no-caps v-if="auth.isAdmin" />
+        <q-btn color="primary" unelevated to="/admin/ventas" no-caps><AppIcon name="point_of_sale" :size="16" class="q-mr-xs" />Venta</q-btn>
+        <q-btn outline color="secondary" to="/admin/pedidos" no-caps><AppIcon name="receipt_long" :size="16" class="q-mr-xs" />Pedido</q-btn>
+        <q-btn outline color="secondary" to="/admin/compras" no-caps v-if="auth.isAdmin"><AppIcon name="shopping_cart" :size="16" class="q-mr-xs" />Compra</q-btn>
       </div>
     </div>
 
@@ -107,6 +107,7 @@ import { ref, computed, onMounted } from 'vue';
 import LoadingState from '../../components/LoadingState.vue';
 import Odometer from '../../components/Odometer.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { fetchResumen, fetchSeries } from '../../services/api.js';
 import { formatDate } from '../../utils/format.js';
@@ -139,7 +140,7 @@ onMounted(async () => {
 .i3d-quick { display: flex; gap: 8px; flex-wrap: wrap; }
 .i3d-card-head {
   display: flex; align-items: center; justify-content: space-between;
-  font-family: var(--font-display); font-weight: 600; font-size: 15px;
+  font-weight: 600; font-size: 15px;
   color: var(--text-primary); margin-bottom: 16px;
 }
 .i3d-card-sub { color: var(--text-muted); font-size: 12px; }

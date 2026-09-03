@@ -5,11 +5,11 @@
         <h1 class="i3d-page-title">Ventas</h1>
         <p class="i3d-page-subtitle">Registro histórico con costo y ganancia automáticos</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nueva venta" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nueva venta</q-btn>
     </div>
 
     <div class="i3d-toolbar">
-      <q-select v-model="fEstado" :options="['completada','anulada']" outlined dense clearable
+      <q-select v-model="fEstado" :options="estadosVenta" outlined dense clearable emit-value map-options
                 label="Filtrar por estado" style="width:200px" @update:model-value="onFilter" />
     </div>
 
@@ -20,11 +20,11 @@
       <template #cell-cliente="{ row }">{{ row.cliente?.nombre || row.clienteNombre || '—' }}</template>
       <template #cell-total="{ value }">{{ money(value) }}</template>
       <template #cell-ganancia="{ row }">
-        <span class="text-positive mono">{{ money(row.ganancia) }}</span> <span class="i3d-auto-tag">auto {{ row.margen }}%</span>
+        <span class="text-positive mono">{{ money(row.ganancia) }}</span>
       </template>
       <template #cell-estado="{ value }"><StatusBadge :label="value" :status="value" /></template>
       <template #actions="{ row }">
-        <q-btn v-if="row.estado !== 'anulada'" flat dense round icon="block" color="negative" size="sm" @click="anular(row)"><q-tooltip>Anular</q-tooltip></q-btn>
+        <q-btn v-if="row.estado !== 'anulada'" flat dense round color="negative" size="sm" @click="anular(row)"><AppIcon name="block" :size="16" /><q-tooltip>Anular</q-tooltip></q-btn>
       </template>
     </ResourceList>
 
@@ -35,20 +35,12 @@
     >
       <template #header-side><StatusBadge :label="current.estado" :status="current.estado" /></template>
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
-      <q-markup-table flat bordered dense class="q-mb-md">
-        <thead><tr><th class="text-left">Producto</th><th class="text-right">Cant.</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th></tr></thead>
-        <tbody>
-          <tr v-for="(it, i) in current.items || []" :key="i">
-            <td>{{ it.nombre }}</td><td class="text-right mono">{{ it.cantidad }}</td>
-            <td class="text-right mono">{{ money(it.precioUnitario) }}</td><td class="text-right mono">{{ money(it.subtotal) }}</td>
-          </tr>
-        </tbody>
-      </q-markup-table>
+      <ItemsTable class="q-mb-md" :rows="current.items || []" :columns="itemColumns" />
       <div v-if="auth.puedeVerCostos" class="i3d-venta-cost">
         <div>Costo real <b class="mono">{{ money(current.costoReal) }}</b></div>
         <div>Ganancia <b class="mono text-positive">{{ money(current.ganancia) }}</b></div>
         <div>Margen <b class="mono text-positive">{{ current.margen }}%</b></div>
-        <span class="i3d-auto-tag"><q-icon name="auto_awesome" size="12px" /> calculado por el sistema</span>
+        <span class="i3d-auto-tag"><AppIcon name="auto_awesome" :size="12" :bordered="false" /> calculado por el sistema</span>
       </div>
     </RecordDetailDialog>
 
@@ -57,7 +49,7 @@
       <q-card class="i3d-order-card">
         <q-card-section class="row items-center">
           <div class="text-h6">Nueva venta</div>
-          <q-space /><q-btn icon="close" flat round dense v-close-popup />
+          <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section class="i3d-order-body">
@@ -71,8 +63,11 @@
             </div>
             <div class="col-12"><q-toggle v-model="form.descontarStock" label="Descontar stock al registrar" /></div>
           </div>
-          <ItemEditor v-model="form.items" :productos="productos" />
-          <div class="q-mt-sm text-caption text-grey">El precio y el costo se toman del producto en el servidor; la ganancia se calcula automáticamente.</div>
+          <ItemEditor v-model="form.items" :productos="productos" :show-costo="auth.puedeVerCostos" />
+          <div class="q-mt-sm text-caption text-grey">
+            El precio y el costo de los productos del catálogo se toman del servidor.
+            <template v-if="auth.puedeVerCostos"> Para ítems manuales, cargá su costo real para que la ganancia se calcule bien.</template>
+          </div>
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">
@@ -93,6 +88,8 @@ import ResourceList from '../../components/ResourceList.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import ItemEditor from '../../components/ItemEditor.vue';
+import ItemsTable from '../../components/ItemsTable.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { fetchVentas, createVenta, anularVenta, fetchProductos, fetchClientes } from '../../services/api.js';
@@ -102,6 +99,15 @@ import '../../styles/dashboard-unified.css';
 const $q = useQuasar();
 const auth = useAuthStore();
 const money = (n) => formatMoney(n);
+
+const itemColumns = [
+  { name: 'nombre', label: 'Producto' },
+  { name: 'cantidad', label: 'Cant.', align: 'right', mono: true },
+  { name: 'precioUnitario', label: 'Precio', align: 'right', mono: true, format: money },
+  { name: 'subtotal', label: 'Subtotal', align: 'right', mono: true, format: money }
+];
+
+const estadosVenta = [{ label: 'COMPLETADA', value: 'completada' }, { label: 'ANULADA', value: 'anulada' }];
 
 const formasPago = [
   { label: 'Efectivo', value: 'efectivo' }, { label: 'Transferencia', value: 'transferencia' },
@@ -155,7 +161,13 @@ async function onSubmit() {
     cliente: form.value.cliente || undefined,
     formaPago: form.value.formaPago,
     descontarStock: form.value.descontarStock,
-    items: form.value.items.map((i) => ({ producto: i.producto || undefined, nombre: i.nombre, cantidad: i.cantidad, precioUnitario: i.precioUnitario }))
+    items: form.value.items.map((i) => ({
+      producto: i.producto || undefined,
+      nombre: i.nombre,
+      cantidad: i.cantidad,
+      precioUnitario: i.precioUnitario,
+      ...(i.producto ? {} : { costoUnitario: Number(i.costoUnitario) || 0 })
+    }))
   };
   const okDone = await create(payload);
   if (okDone) dialog.value = false;

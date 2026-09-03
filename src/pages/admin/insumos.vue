@@ -5,13 +5,13 @@
         <h1 class="i3d-page-title">Insumos</h1>
         <p class="i3d-page-subtitle">Stock de imanes, aros, vasos y otros insumos</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nuevo insumo" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nuevo insumo</q-btn>
     </div>
 
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre o categoría" @update:model-value="onSearch" clearable>
-        <template #prepend><q-icon name="search" /></template>
+        <template #prepend><AppIcon name="search" :size="18" /></template>
       </q-input>
     </div>
 
@@ -26,9 +26,9 @@
       </template>
       <template #cell-costo="{ value }">{{ money(value) }}</template>
       <template #actions="{ row }">
-        <q-btn flat dense round icon="tune" color="orange" size="sm" @click="openAjuste(row)"><q-tooltip>Ajustar stock</q-tooltip></q-btn>
-        <q-btn flat dense round icon="edit" size="sm" @click="openEdit(row)" />
-        <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(row)" />
+        <q-btn flat dense round color="orange" size="sm" @click="openAjuste(row)"><AppIcon name="tune" :size="16" /><q-tooltip>Ajustar stock</q-tooltip></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
       </template>
     </ResourceList>
 
@@ -80,6 +80,7 @@ import ResourceList from '../../components/ResourceList.vue';
 import ResourceDialog from '../../components/ResourceDialog.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import LoadingState from '../../components/LoadingState.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { fetchInsumos, createInsumo, updateInsumo, deleteInsumo, ajustarInsumo, fetchInsumoMovimientos } from '../../services/api.js';
 import { formatMoney, formatDateTime } from '../../utils/format.js';

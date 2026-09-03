@@ -16,12 +16,12 @@
         <q-input v-model="password" :type="showPass ? 'text' : 'password'" label="Contraseña" outlined
                  :rules="[v => !!v || 'Requerido']">
           <template #append>
-            <q-icon :name="showPass ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="showPass = !showPass" />
+            <AppIcon :name="showPass ? 'visibility_off' : 'visibility'" :size="18" class="cursor-pointer" @click="showPass = !showPass" />
           </template>
         </q-input>
 
         <q-banner v-if="reason" dense class="i3d-login-banner">
-          <template #avatar><q-icon name="schedule" color="warning" /></template>
+          <template #avatar><AppIcon name="schedule" :size="20" color="warning" /></template>
           Tu sesión expiró. Iniciá sesión de nuevo.
         </q-banner>
 
@@ -29,7 +29,7 @@
       </q-form>
 
       <div class="i3d-login-store">
-        <q-btn flat color="secondary" icon="storefront" label="Ir a la tienda" to="/tienda" no-caps />
+        <q-btn flat color="secondary" to="/tienda" no-caps><AppIcon name="storefront" :size="16" class="q-mr-xs" />Ir a la tienda</q-btn>
       </div>
     </q-card>
   </div>
@@ -40,6 +40,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from '../stores/auth.js';
+import AppIcon from '../components/AppIcon.vue';
 
 const router = useRouter();
 const $q = useQuasar();
@@ -91,7 +92,7 @@ async function onSubmit() {
 .i3d-login-brand { text-align: center; margin-bottom: 26px; }
 .i3d-brand-mark { display: inline-block; width: 46px; height: 46px; }
 .i3d-brand-mark svg { width: 100%; height: 100%; }
-.i3d-login-brand h1 { font-family: var(--font-display); font-size: 21px; margin: 12px 0 4px; color: var(--text-primary); }
+.i3d-login-brand h1 { font-size: 21px; margin: 12px 0 4px; color: var(--text-primary); }
 .i3d-login-brand p { color: var(--text-muted); margin: 0; font-size: 12px; letter-spacing: .05em; }
 .i3d-login-banner { background: var(--accent-soft); color: var(--text-primary); border-radius: var(--radius-sm); }
 .i3d-login-store { text-align: center; margin-top: 18px; }

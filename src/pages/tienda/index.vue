@@ -8,7 +8,7 @@
     <div class="i3d-catalog-filters">
       <q-input v-model="search" outlined dense debounce="350" placeholder="Buscar producto"
                @update:model-value="onFilter" clearable class="col-grow">
-        <template #prepend><q-icon name="search" /></template>
+        <template #prepend><AppIcon name="search" :size="18" /></template>
       </q-input>
       <q-select v-model="categoria" :options="info.categorias || []" outlined dense clearable
                 placeholder="Categoría" @update:model-value="onFilter" style="min-width:160px" />
@@ -21,7 +21,7 @@
         <q-card v-for="p in productos" :key="p.id" class="i3d-prod-card">
           <div class="i3d-prod-img">
             <img v-if="p.fotoPrincipal" :src="p.fotoPrincipal" :alt="p.nombre" />
-            <q-icon v-else name="view_in_ar" size="48px" color="grey-6" />
+            <AppIcon v-else name="view_in_ar" :size="40" color="muted" />
             <span v-if="p.disponibilidad" class="i3d-status i3d-disp" :data-tone="dispTone(p.disponibilidad)">{{ p.disponibilidad }}</span>
           </div>
           <q-card-section class="i3d-prod-body">
@@ -30,8 +30,10 @@
             <div class="i3d-prod-price mono">{{ money(p.precio) }}</div>
           </q-card-section>
           <q-card-actions class="q-pt-none">
-            <q-btn color="primary" class="full-width" icon="add_shopping_cart" label="Agregar" unelevated no-caps
-                   :disable="p.disponibilidad === 'Sin stock'" @click="add(p, $event)" />
+            <q-btn color="primary" class="full-width" unelevated no-caps
+                   :disable="p.disponibilidad === 'Sin stock'" @click="add(p, $event)">
+              <AppIcon name="add_shopping_cart" :size="16" class="q-mr-xs" />Agregar
+            </q-btn>
           </q-card-actions>
         </q-card>
       </div>
@@ -43,6 +45,7 @@
 import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import LoadingState from '../../components/LoadingState.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useCarritoStore } from '../../stores/carrito.js';
 import { fetchCatalogo, fetchTiendaInfo } from '../../services/api.js';
 import { formatMoney } from '../../utils/format.js';
@@ -112,7 +115,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.i3d-catalog-head h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 4px; color: var(--text-primary); letter-spacing: -0.02em; }
+.i3d-catalog-head h1 { font-size: 30px; margin: 0 0 4px; color: var(--text-primary); letter-spacing: -0.02em; }
 .i3d-catalog-head p { color: var(--text-secondary); margin: 0 0 22px; }
 .i3d-catalog-filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
 .i3d-catalog-filters .col-grow { flex: 1 1 240px; }

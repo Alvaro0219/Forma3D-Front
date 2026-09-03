@@ -1,12 +1,12 @@
 <template>
   <div class="i3d-cart">
     <div class="i3d-cart-head">
-      <q-btn flat dense icon="arrow_back" label="Seguir comprando" to="/tienda" />
+      <q-btn flat dense to="/tienda"><AppIcon name="arrow_back" :size="16" class="q-mr-xs" />Seguir comprando</q-btn>
       <h1>Tu carrito</h1>
     </div>
 
     <div v-if="carrito.isEmpty" class="app-empty-state">
-      <q-icon name="shopping_cart" size="48px" color="grey-4" />
+      <AppIcon name="shopping_cart" :size="40" color="muted" />
       <span>Tu carrito está vacío.</span>
       <q-btn color="primary" label="Ir al catálogo" to="/tienda" class="q-mt-md" />
     </div>
@@ -18,7 +18,7 @@
           <div v-for="item in carrito.items" :key="item.id" class="i3d-cart-item">
             <div class="i3d-cart-thumb">
               <img v-if="item.fotoPrincipal" :src="item.fotoPrincipal" :alt="item.nombre" />
-              <q-icon v-else name="view_in_ar" size="28px" color="grey-4" />
+              <AppIcon v-else name="view_in_ar" :size="22" color="muted" />
             </div>
             <div class="i3d-cart-info">
               <div class="i3d-cart-name">{{ item.nombre }}</div>
@@ -26,12 +26,12 @@
               <div class="i3d-cart-price">{{ money(item.precio) }} c/u</div>
             </div>
             <div class="i3d-cart-qty">
-              <q-btn flat dense round icon="remove" size="sm" @click="dec(item)" />
+              <q-btn flat dense round size="sm" @click="dec(item)"><AppIcon name="remove" :size="14" /></q-btn>
               <span>{{ item.cantidad }}</span>
-              <q-btn flat dense round icon="add" size="sm" @click="inc(item)" />
+              <q-btn flat dense round size="sm" @click="inc(item)"><AppIcon name="add" :size="14" /></q-btn>
             </div>
             <div class="i3d-cart-sub">{{ money(item.precio * item.cantidad) }}</div>
-            <q-btn flat dense round icon="delete" color="negative" @click="carrito.remove(item.id)" />
+            <q-btn flat dense round color="negative" @click="carrito.remove(item.id)"><AppIcon name="delete" :size="16" /></q-btn>
           </div>
         </div>
       </div>
@@ -50,8 +50,10 @@
             <span>Total</span><b>{{ money(carrito.total) }}</b>
           </div>
 
-          <q-btn color="green-7" class="full-width q-mt-md" size="lg" icon="chat" label="Finalizar por WhatsApp"
-                 :loading="loading" @click="finalizar" unelevated />
+          <q-btn color="green-7" class="full-width q-mt-md" size="lg"
+                 :loading="loading" @click="finalizar" unelevated>
+            <AppIcon name="chat" :size="18" class="q-mr-xs" />Finalizar por WhatsApp
+          </q-btn>
           <div class="text-caption text-grey q-mt-sm text-center">
             Se abrirá WhatsApp con el detalle del pedido. No se procesan pagos en el sitio.
           </div>
@@ -66,6 +68,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useCarritoStore } from '../../stores/carrito.js';
 import { checkoutTienda } from '../../services/api.js';
+import AppIcon from '../../components/AppIcon.vue';
 import { formatMoney } from '../../utils/format.js';
 
 const $q = useQuasar();
@@ -109,7 +112,7 @@ async function finalizar() {
 
 <style scoped>
 .i3d-cart-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.i3d-cart-head h1 { font-family: var(--font-display); font-size: 24px; margin: 0; color: var(--text-primary); }
+.i3d-cart-head h1 { font-size: 24px; margin: 0; color: var(--text-primary); }
 
 .i3d-cart-item {
   display: flex; align-items: center; gap: 12px;
@@ -123,13 +126,13 @@ async function finalizar() {
 .i3d-cart-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .i3d-cart-info { flex: 1; min-width: 0; }
 .i3d-cart-name { font-weight: 600; color: var(--text-primary); }
-.i3d-cart-code { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
-.i3d-cart-price { font-size: 13px; color: var(--text-secondary); font-family: var(--font-mono); }
+.i3d-cart-code { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.i3d-cart-price { font-size: 13px; color: var(--text-secondary); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .i3d-cart-qty { display: flex; align-items: center; gap: 6px; }
-.i3d-cart-qty span { font-family: var(--font-mono); min-width: 20px; text-align: center; }
-.i3d-cart-sub { width: 90px; text-align: right; font-weight: 600; color: var(--text-primary); font-family: var(--font-mono); }
+.i3d-cart-qty span { font-family: var(--font-mono); font-variant-numeric: tabular-nums; min-width: 20px; text-align: center; }
+.i3d-cart-sub { width: 90px; text-align: right; font-weight: 600; color: var(--text-primary); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 .i3d-summary { position: sticky; top: 88px; }
-.i3d-summary-total { display: flex; justify-content: space-between; font-size: 18px; padding-top: 12px; border-top: 1px solid var(--border-strong); font-family: var(--font-display); }
-.i3d-summary-total b { color: var(--accent); font-family: var(--font-mono); }
+.i3d-summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 600; padding-top: 12px; border-top: 1px solid var(--border-strong); }
+.i3d-summary-total b { color: var(--accent); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 </style>

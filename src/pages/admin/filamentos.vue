@@ -5,13 +5,13 @@
         <h1 class="i3d-page-title">Filamentos</h1>
         <p class="i3d-page-subtitle">Control por bobina con costo por gramo automático</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nueva bobina" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nueva bobina</q-btn>
     </div>
 
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por marca, color o ID de bobina" @update:model-value="onFilter" clearable>
-        <template #prepend><q-icon name="search" /></template>
+        <template #prepend><AppIcon name="search" :size="18" /></template>
       </q-input>
       <q-select v-model="fTipo" :options="tipos" outlined dense clearable label="Tipo de filamento"
                 emit-value map-options style="width:180px" @update:model-value="onFilter" />
@@ -25,12 +25,19 @@
         <div class="mono">{{ row.pesoDisponible }} / {{ row.pesoOriginal }} g</div>
         <q-linear-progress :value="row.pesoDisponible / row.pesoOriginal" :color="barColor(row)" size="6px" class="q-mt-xs rounded-borders" style="max-width:140px" />
       </template>
+      <template #cell-color="{ value }">
+        <div v-if="value" class="i3d-color-chip">
+          <ColorDot :color="value" />
+          <span>{{ value }}</span>
+        </div>
+        <span v-else class="text-grey">—</span>
+      </template>
       <template #cell-costoPorGramo="{ value }">{{ money(value) }}</template>
       <template #cell-estado="{ value }"><StatusBadge :label="value" :status="value" /></template>
       <template #actions="{ row }">
-        <q-btn flat dense round icon="remove_circle_outline" color="orange" size="sm" @click="openConsumo(row)"><q-tooltip>Registrar consumo</q-tooltip></q-btn>
-        <q-btn flat dense round icon="edit" size="sm" @click="openEdit(row)" />
-        <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(row)" />
+        <q-btn flat dense round color="orange" size="sm" @click="openConsumo(row)"><AppIcon name="remove_circle_outline" :size="16" /><q-tooltip>Registrar consumo</q-tooltip></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
       </template>
     </ResourceList>
 
@@ -43,7 +50,13 @@
     <RecordDetailDialog
       v-model="detailDialog" :title="detailTitle" :subtitle="current.identificadorBobina" :fields="detailFields"
     >
-      <template #header-side><StatusBadge :label="current.estado" :status="current.estado" /></template>
+      <template #header-side>
+        <span v-if="current.color" class="i3d-color-chip q-mr-sm">
+          <ColorDot :color="current.color" />
+          <span>{{ current.color }}</span>
+        </span>
+        <StatusBadge :label="current.estado" :status="current.estado" />
+      </template>
       <div class="text-subtitle2 q-mb-xs">Historial de movimientos</div>
       <LoadingState :loading="movLoading" :empty="!movLoading && movimientos.length === 0" empty-label="Sin movimientos.">
         <q-list dense bordered class="rounded-borders">
@@ -64,7 +77,11 @@
         <q-card-section><div class="text-h6">Registrar consumo</div></q-card-section>
         <q-separator />
         <q-card-section>
-          <div class="q-mb-sm text-caption text-grey">{{ consumoTarget?.marca }} {{ consumoTarget?.tipo }} {{ consumoTarget?.color }} — disponible {{ consumoTarget?.pesoDisponible }} g</div>
+          <div class="q-mb-sm text-caption text-grey row items-center q-gutter-x-xs">
+            <span>{{ consumoTarget?.marca }} {{ consumoTarget?.tipo }}</span>
+            <ColorDot v-if="consumoTarget?.color" :color="consumoTarget.color" />
+            <span>{{ consumoTarget?.color }} — disponible {{ consumoTarget?.pesoDisponible }} g</span>
+          </div>
           <q-input v-model.number="consumoGramos" type="number" label="Gramos consumidos" outlined dense />
           <q-input v-model="consumoRef" label="Referencia (opcional)" outlined dense class="q-mt-sm" />
         </q-card-section>
@@ -86,6 +103,8 @@ import ResourceDialog from '../../components/ResourceDialog.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import LoadingState from '../../components/LoadingState.vue';
+import AppIcon from '../../components/AppIcon.vue';
+import ColorDot from '../../components/ColorDot.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
   fetchFilamentos, createFilamento, updateFilamento, deleteFilamento, consumirFilamento, fetchFilamentoMovimientos
@@ -117,7 +136,7 @@ const fields = [
   { name: 'identificadorBobina', label: 'ID Bobina', cols: 6, required: true },
   { name: 'marca', label: 'Marca', cols: 6 },
   { name: 'tipo', label: 'Tipo', type: 'select', cols: 6, default: 'PLA', options: tipos.map((t) => ({ label: t, value: t })) },
-  { name: 'color', label: 'Color', cols: 6 },
+  { name: 'color', label: 'Color', type: 'color', cols: 6 },
   { name: 'pesoOriginal', label: 'Peso original (g)', type: 'number', cols: 6, default: 1000, required: true },
   { name: 'pesoDisponible', label: 'Peso disponible (g)', type: 'number', cols: 6, hint: 'Vacío = lleno' },
   { name: 'precioCompra', label: 'Precio de compra', type: 'number', cols: 6, prefix: '$', required: true },
@@ -139,7 +158,6 @@ const detailFields = computed(() => {
   return [
     { label: 'Marca', value: f.marca, cols: 4 },
     { label: 'Tipo', value: f.tipo, cols: 4 },
-    { label: 'Color', value: f.color, cols: 4 },
     { label: 'Peso original', value: `${f.pesoOriginal ?? 0} g`, mono: true, cols: 4 },
     { label: 'Disponible', value: `${f.pesoDisponible ?? 0} g`, mono: true, cols: 4 },
     { label: 'Costo por gramo', value: money(f.costoPorGramo), mono: true, cols: 4 },
@@ -200,3 +218,7 @@ async function doConsumo() {
 
 onMounted(() => reload());
 </script>
+
+<style scoped>
+.i3d-color-chip { display: inline-flex; align-items: center; gap: 6px; }
+</style>

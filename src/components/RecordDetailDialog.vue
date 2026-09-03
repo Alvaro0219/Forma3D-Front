@@ -8,7 +8,7 @@
         </div>
         <q-space />
         <slot name="header-side" />
-        <q-btn icon="close" flat round dense v-close-popup class="q-ml-sm" />
+        <q-btn flat round dense v-close-popup class="q-ml-sm"><AppIcon name="close" :size="18" /></q-btn>
       </q-card-section>
 
       <q-separator />
@@ -33,6 +33,8 @@
 </template>
 
 <script setup>
+import AppIcon from './AppIcon.vue';
+
 defineProps({
   modelValue: Boolean,
   title: { type: String, default: 'Detalle' },

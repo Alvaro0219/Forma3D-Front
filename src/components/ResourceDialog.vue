@@ -4,7 +4,7 @@
       <q-card-section class="row items-center">
         <div class="text-h6">{{ title }}</div>
         <q-space />
-        <q-btn icon="close" flat round dense v-close-popup />
+        <q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
       </q-card-section>
 
       <q-separator />
@@ -47,6 +47,32 @@
               outlined dense
               :hint="f.hint"
             />
+            <q-input
+              v-else-if="f.type === 'color'"
+              v-model="form[f.name]"
+              :label="f.label"
+              outlined dense
+              maxlength="7"
+              :hint="f.hint || 'Elegí de la paleta o escribí un código hex'"
+            >
+              <template #prepend>
+                <ColorDot :color="form[f.name]" :size="16" />
+              </template>
+              <template #append>
+                <span class="i3d-color-trigger cursor-pointer">
+                  <AppIcon name="palette" :size="18" :bordered="false" />
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-color
+                      v-model="form[f.name]"
+                      default-view="palette"
+                      no-header-tabs
+                      format-model="hex"
+                      :palette="colorPalette"
+                    />
+                  </q-popup-proxy>
+                </span>
+              </template>
+            </q-input>
             <div v-else-if="f.type === 'image'" class="i3d-image-field">
               <div class="i3d-image-field-label">{{ f.label }}</div>
               <q-file
@@ -57,7 +83,7 @@
                 :loading="uploadingField === f.name && uploading"
                 @update:model-value="(file) => onImagePick(f, file)"
               >
-                <template #prepend><q-icon name="cloud_upload" /></template>
+                <template #prepend><AppIcon name="cloud_upload" :size="18" /></template>
               </q-file>
               <q-linear-progress
                 v-if="uploadingField === f.name && uploading"
@@ -65,7 +91,8 @@
               />
               <div v-if="form[f.name]" class="i3d-image-preview">
                 <img :src="form[f.name]" alt="Vista previa" />
-                <q-btn dense flat round icon="close" size="sm" color="negative" @click="form[f.name] = ''">
+                <q-btn dense flat round size="sm" color="negative" @click="form[f.name] = ''">
+                  <AppIcon name="close" :size="14" color="danger" />
                   <q-tooltip>Quitar imagen</q-tooltip>
                 </q-btn>
               </div>
@@ -98,6 +125,8 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import AppIcon from './AppIcon.vue';
+import ColorDot from './ColorDot.vue';
 import { useImageUpload } from '../composables/useImageUpload.js';
 
 const props = defineProps({
@@ -116,6 +145,12 @@ const form = ref({});
 const { uploading, progress, uploadImage } = useImageUpload();
 const uploadingField = ref('');
 
+// Paleta curada de colores tipicos de filamento (ademas de la paleta el usuario puede tipear un hex exacto).
+const colorPalette = [
+  '#FFFFFF', '#000000', '#9CA3AF', '#C0C0C0', '#E53935', '#FB8C00',
+  '#FDD835', '#43A047', '#1E88E5', '#3949AB', '#8E24AA', '#EC407A',
+  '#6D4C41', '#D4AF37', '#19E3C2', '#F5F0E6'
+];
 async function onImagePick(field, file) {
   if (!file) return;
   uploadingField.value = field.name;
@@ -170,4 +205,6 @@ function submit() {
 }
 .i3d-image-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .i3d-image-preview .q-btn { position: absolute; top: 2px; right: 2px; background: var(--bg-elevated); }
+
+.i3d-color-trigger { display: inline-flex; align-items: center; }
 </style>

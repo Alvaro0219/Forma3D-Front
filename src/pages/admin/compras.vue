@@ -5,7 +5,7 @@
         <h1 class="i3d-page-title">Compras</h1>
         <p class="i3d-page-subtitle">Al confirmar, aumenta el stock y registra el gasto</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nueva compra" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nueva compra</q-btn>
     </div>
 
     <div class="i3d-toolbar">
@@ -29,16 +29,7 @@
       :subtitle="current.proveedor?.nombre" :fields="detailFields"
     >
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
-      <q-markup-table flat bordered dense>
-        <thead><tr><th class="text-left">Tipo</th><th class="text-left">Descripción</th><th class="text-right">Cant.</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th></tr></thead>
-        <tbody>
-          <tr v-for="(it, i) in current.items || []" :key="i">
-            <td>{{ it.articuloTipo }}</td><td>{{ it.descripcion }}</td>
-            <td class="text-right mono">{{ it.cantidad }}</td><td class="text-right mono">{{ money(it.precioUnitario) }}</td>
-            <td class="text-right mono">{{ money(it.subtotal) }}</td>
-          </tr>
-        </tbody>
-      </q-markup-table>
+      <ItemsTable :rows="current.items || []" :columns="itemColumns" />
       <div v-if="current.observaciones" class="q-mt-sm"><div class="i3d-lc-k">Observaciones</div>{{ current.observaciones }}</div>
     </RecordDetailDialog>
 
@@ -47,7 +38,7 @@
       <q-card class="i3d-order-card">
         <q-card-section class="row items-center">
           <div class="text-h6">Nueva compra</div>
-          <q-space /><q-btn icon="close" flat round dense v-close-popup />
+          <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section class="i3d-order-body">
@@ -73,20 +64,14 @@
             <div class="col-12 col-md-5"><q-input v-model="draft.descripcion" outlined dense label="Descripción" /></div>
             <div class="col-4 col-md-3"><q-input v-model.number="draft.cantidad" type="number" outlined dense label="Cantidad" /></div>
             <div class="col-4 col-md-3"><q-input v-model.number="draft.precioUnitario" type="number" outlined dense label="Precio unit." prefix="$" /></div>
-            <div class="col-4 col-md-3"><q-btn color="primary" outline icon="add" label="Agregar" class="full-width" @click="addItem" /></div>
+            <div class="col-4 col-md-3"><q-btn color="primary" outline dense class="full-width i3d-add-btn" @click="addItem"><AppIcon name="add" :size="16" class="q-mr-xs" />Agregar</q-btn></div>
           </div>
 
-          <q-markup-table flat bordered dense v-if="form.items.length">
-            <thead><tr><th class="text-left">Tipo</th><th class="text-left">Descripción</th><th class="text-right">Cant.</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th><th></th></tr></thead>
-            <tbody>
-              <tr v-for="(it, idx) in form.items" :key="idx">
-                <td>{{ it.articuloTipo }}</td><td>{{ it.descripcion }}</td>
-                <td class="text-right mono">{{ it.cantidad }}</td><td class="text-right mono">{{ money(it.precioUnitario) }}</td>
-                <td class="text-right mono">{{ money(it.cantidad * it.precioUnitario) }}</td>
-                <td class="text-center"><q-btn flat dense round icon="close" size="sm" color="negative" @click="form.items.splice(idx,1)" /></td>
-              </tr>
-            </tbody>
-          </q-markup-table>
+          <ItemsTable v-if="form.items.length" :rows="form.items" :columns="draftItemColumns" has-actions>
+            <template #actions="{ index }">
+              <q-btn flat dense round size="sm" color="negative" @click="form.items.splice(index,1)"><AppIcon name="close" :size="14" /></q-btn>
+            </template>
+          </ItemsTable>
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">
@@ -105,6 +90,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import ResourceList from '../../components/ResourceList.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
+import ItemsTable from '../../components/ItemsTable.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { fetchCompras, createCompra, fetchProveedores, fetchInsumos, fetchFilamentos } from '../../services/api.js';
 import { formatMoney, formatDate } from '../../utils/format.js';
@@ -112,6 +99,21 @@ import '../../styles/dashboard-unified.css';
 
 const $q = useQuasar();
 const money = (n) => formatMoney(n);
+
+const itemColumns = [
+  { name: 'articuloTipo', label: 'Tipo' },
+  { name: 'descripcion', label: 'Descripción' },
+  { name: 'cantidad', label: 'Cant.', align: 'right', mono: true },
+  { name: 'precioUnitario', label: 'Precio', align: 'right', mono: true, format: money },
+  { name: 'subtotal', label: 'Subtotal', align: 'right', mono: true, format: money }
+];
+const draftItemColumns = [
+  { name: 'articuloTipo', label: 'Tipo' },
+  { name: 'descripcion', label: 'Descripción' },
+  { name: 'cantidad', label: 'Cant.', align: 'right', mono: true },
+  { name: 'precioUnitario', label: 'Precio', align: 'right', mono: true, format: money },
+  { name: 'subtotal', label: 'Subtotal', align: 'right', mono: true, format: (v, row) => money(row.cantidad * row.precioUnitario) }
+];
 const date = (d) => formatDate(d);
 
 const formasPago = [

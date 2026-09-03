@@ -8,10 +8,12 @@
         <span>{{ info.nombreNegocio || 'Tienda 3D' }}</span>
       </router-link>
       <q-space />
-      <q-btn flat round dense :icon="theme.isDark ? 'light_mode' : 'dark_mode'" @click="theme.toggle()">
+      <q-btn flat round dense @click="theme.toggle()">
+        <AppIcon :name="theme.isDark ? 'light_mode' : 'dark_mode'" :size="18" />
         <q-tooltip>{{ theme.isDark ? 'Modo claro' : 'Modo oscuro' }}</q-tooltip>
       </q-btn>
-      <q-btn flat round id="i3d-cart-btn" icon="shopping_cart" @click="$router.push('/tienda/carrito')">
+      <q-btn flat round id="i3d-cart-btn" @click="$router.push('/tienda/carrito')">
+        <AppIcon name="shopping_cart" :size="20" />
         <q-badge v-if="carrito.count" color="primary" floating>{{ carrito.count }}</q-badge>
       </q-btn>
     </header>
@@ -31,6 +33,7 @@ import { ref, onMounted } from 'vue';
 import { useCarritoStore } from '../stores/carrito.js';
 import { useThemeStore } from '../stores/theme.js';
 import { fetchTiendaInfo } from '../services/api.js';
+import AppIcon from '../components/AppIcon.vue';
 
 const carrito = useCarritoStore();
 const theme = useThemeStore();
@@ -52,7 +55,7 @@ onMounted(async () => {
 }
 .i3d-store-brand {
   display: flex; align-items: center; gap: 10px;
-  font-family: var(--font-display); font-weight: 700; font-size: 19px;
+  font-weight: 700; font-size: 19px;
   color: var(--text-primary); text-decoration: none;
 }
 .i3d-brand-mark { width: 26px; height: 26px; }

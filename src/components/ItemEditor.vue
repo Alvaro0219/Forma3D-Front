@@ -13,51 +13,65 @@
         <q-input v-model.number="pickQty" type="number" outlined dense label="Cant." min="1" />
       </div>
       <div class="col-6 col-md-3">
-        <q-btn color="primary" outline icon="add" label="Agregar" class="full-width" @click="addPicked" />
+        <q-btn color="primary" outline dense class="full-width i3d-add-btn" @click="addPicked"><AppIcon name="add" :size="16" class="q-mr-xs" />Agregar</q-btn>
       </div>
       <div class="col-12 col-md-2">
-        <q-btn flat dense color="grey-7" icon="edit_note" label="Manual" class="full-width" @click="addManual" />
+        <q-btn flat dense color="grey-7" class="full-width i3d-add-btn" @click="addManual"><AppIcon name="edit_note" :size="16" class="q-mr-xs" />Manual</q-btn>
       </div>
     </div>
 
-    <q-markup-table flat bordered dense v-if="modelValue.length">
-      <thead>
-        <tr>
-          <th class="text-left">Producto</th>
-          <th class="text-right" style="width:90px">Cant.</th>
-          <th class="text-right" style="width:130px">Precio</th>
-          <th class="text-right" style="width:120px">Subtotal</th>
-          <th style="width:40px"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(it, idx) in modelValue" :key="idx">
-          <td>
-            <q-input v-if="!it.producto" v-model="it.nombre" dense borderless placeholder="Descripción" />
-            <span v-else>{{ it.nombre }}</span>
-          </td>
-          <td class="text-right"><q-input v-model.number="it.cantidad" type="number" dense borderless input-class="text-right" min="1" /></td>
-          <td class="text-right"><q-input v-model.number="it.precioUnitario" type="number" dense borderless input-class="text-right" /></td>
-          <td class="text-right">{{ money(it.cantidad * it.precioUnitario) }}</td>
-          <td class="text-center"><q-btn flat dense round icon="close" size="sm" color="negative" @click="removeItem(idx)" /></td>
-        </tr>
-      </tbody>
-    </q-markup-table>
+    <ItemsTable v-if="modelValue.length" :rows="modelValue" :columns="columns" has-actions>
+      <template #cell-nombre="{ row }">
+        <q-input v-if="!row.producto" v-model="row.nombre" dense borderless placeholder="Descripción" />
+        <span v-else>{{ row.nombre }}</span>
+      </template>
+      <template #cell-cantidad="{ row }">
+        <q-input v-model.number="row.cantidad" type="number" dense borderless input-class="text-right" min="1" />
+      </template>
+      <template #cell-precioUnitario="{ row }">
+        <q-input v-model.number="row.precioUnitario" type="number" dense borderless input-class="text-right" />
+      </template>
+      <template v-if="showCosto" #cell-costoUnitario="{ row }">
+        <q-input
+          v-if="!row.producto" v-model.number="row.costoUnitario" type="number" dense borderless
+          input-class="text-right" placeholder="0" hint="Costo real (manual)"
+        />
+        <span v-else class="text-grey">automático</span>
+      </template>
+      <template #cell-subtotal="{ row }">{{ money(row.cantidad * row.precioUnitario) }}</template>
+      <template #actions="{ index }">
+        <q-btn flat dense round size="sm" color="negative" @click="removeItem(index)"><AppIcon name="close" :size="14" /></q-btn>
+      </template>
+    </ItemsTable>
     <div v-else class="text-grey q-pa-sm">Sin ítems. Agregá productos arriba.</div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import AppIcon from './AppIcon.vue';
+import ItemsTable from './ItemsTable.vue';
 import { formatMoney } from '../utils/format.js';
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
-  productos: { type: Array, default: () => [] }
+  productos: { type: Array, default: () => [] },
+  // Muestra la columna de costo real para items manuales (sin producto asociado),
+  // asi la ganancia calculada en el servidor no los asume gratis.
+  showCosto: { type: Boolean, default: false }
 });
 const emit = defineEmits(['update:modelValue']);
 
 const money = (n) => formatMoney(n);
+
+const columns = computed(() => [
+  { name: 'nombre', label: 'Producto' },
+  { name: 'cantidad', label: 'Cant.', align: 'right' },
+  { name: 'precioUnitario', label: 'Precio', align: 'right' },
+  ...(props.showCosto ? [{ name: 'costoUnitario', label: 'Costo', align: 'right' }] : []),
+  { name: 'subtotal', label: 'Subtotal', align: 'right', mono: true }
+]);
+
 const picked = ref(null);
 const pickQty = ref(1);
 const prodOptions = ref([]);
@@ -92,7 +106,7 @@ function addPicked() {
 }
 
 function addManual() {
-  emit('update:modelValue', [...props.modelValue, { producto: null, nombre: '', cantidad: 1, precioUnitario: 0 }]);
+  emit('update:modelValue', [...props.modelValue, { producto: null, nombre: '', cantidad: 1, precioUnitario: 0, costoUnitario: 0 }]);
 }
 
 function removeItem(idx) {
@@ -103,5 +117,5 @@ function removeItem(idx) {
 </script>
 
 <style scoped>
-.i3d-items { border-top: 1px solid #e2e8f0; padding-top: 12px; }
+.i3d-items { border-top: 1px solid var(--border); padding-top: 12px; }
 </style>

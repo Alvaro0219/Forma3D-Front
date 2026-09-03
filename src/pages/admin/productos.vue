@@ -5,13 +5,13 @@
         <h1 class="i3d-page-title">Productos</h1>
         <p class="i3d-page-subtitle">Catálogo interno y de la tienda</p>
       </div>
-      <q-btn color="primary" unelevated icon="add" label="Nuevo producto" no-caps @click="openCreate" />
+      <q-btn color="primary" unelevated no-caps @click="openCreate"><AppIcon name="add" :size="16" :bordered="false" class="q-mr-xs" />Nuevo producto</q-btn>
     </div>
 
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre o SKU" @update:model-value="onFilter" clearable>
-        <template #prepend><q-icon name="search" /></template>
+        <template #prepend><AppIcon name="search" :size="18" /></template>
       </q-input>
       <q-select v-model="fCategoria" :options="categorias" outlined dense clearable
                 label="Filtrar por categoría" style="width:190px" @update:model-value="onFilter" />
@@ -28,11 +28,11 @@
         <span v-else class="text-grey">—</span>
       </template>
       <template #cell-visibleEnTienda="{ value }">
-        <q-icon :name="value ? 'check_circle' : 'cancel'" :color="value ? 'positive' : 'grey-6'" size="18px" />
+        <AppIcon :name="value ? 'check_circle' : 'cancel'" :color="value ? 'success' : 'muted'" :size="18" />
       </template>
       <template #actions="{ row }">
-        <q-btn flat dense round icon="edit" size="sm" @click="openEdit(row)" />
-        <q-btn flat dense round icon="delete" color="negative" size="sm" @click="confirmDelete(row)" />
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
       </template>
     </ResourceList>
 
@@ -59,20 +59,15 @@
               <q-input v-model.number="draftInsumo.cantidad" type="number" outlined dense label="Cant. x unidad" min="0" />
             </div>
             <div class="col-2">
-              <q-btn color="primary" outline icon="add" class="full-width" @click="addInsumo" />
+              <q-btn color="primary" outline dense class="i3d-add-btn i3d-add-btn-icon" @click="addInsumo"><AppIcon name="add" :size="16" /></q-btn>
             </div>
           </div>
 
-          <q-markup-table v-if="bom.length" flat bordered dense>
-            <thead><tr><th class="text-left">Insumo</th><th class="text-right">Cant. x unidad</th><th></th></tr></thead>
-            <tbody>
-              <tr v-for="(l, i) in bom" :key="i">
-                <td>{{ l.nombre }}</td>
-                <td class="text-right mono">{{ l.cantidad }} {{ l.unidad }}</td>
-                <td class="text-center"><q-btn flat dense round icon="close" size="sm" color="negative" @click="bom.splice(i,1)" /></td>
-              </tr>
-            </tbody>
-          </q-markup-table>
+          <ItemsTable v-if="bom.length" :rows="bom" :columns="bomColumns" has-actions>
+            <template #actions="{ index }">
+              <q-btn flat dense round size="sm" color="negative" @click="bom.splice(index,1)"><AppIcon name="close" :size="14" /></q-btn>
+            </template>
+          </ItemsTable>
           <div v-else class="text-grey q-pa-sm">Sin insumos asociados.</div>
         </div>
       </template>
@@ -99,7 +94,7 @@
       <div v-else class="text-grey q-mb-md">Sin insumos asociados.</div>
 
       <div class="i3d-auto-note" v-if="puedeVerCostos">
-        <q-icon name="lock" size="13px" /> Datos internos (no se muestran en la tienda)
+        <AppIcon name="lock" :size="13" :bordered="false" /> Datos internos (no se muestran en la tienda)
       </div>
     </RecordDetailDialog>
   </div>
@@ -113,6 +108,8 @@ import ResourceDialog from '../../components/ResourceDialog.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import SkuPreview from '../../components/SkuPreview.vue';
+import ItemsTable from '../../components/ItemsTable.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
@@ -180,6 +177,10 @@ const detailDialog = ref(false);
 
 // Lista de materiales (insumos) del producto, manejada en la pagina.
 const bom = ref([]);
+const bomColumns = [
+  { name: 'nombre', label: 'Insumo' },
+  { name: 'cantidad', label: 'Cant. x unidad', align: 'right', mono: true, format: (v, row) => `${row.cantidad} ${row.unidad || ''}`.trim() }
+];
 const draftInsumo = ref({ insumo: null, cantidad: 1 });
 
 const detailFields = computed(() => {
@@ -268,6 +269,6 @@ onMounted(async () => {
 .i3d-auto-note { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 8px; }
 .i3d-bom { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
 .i3d-bom-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-.i3d-bom-head > span:first-child { font-family: var(--font-display); font-weight: 600; }
+.i3d-bom-head > span:first-child { font-weight: 600; }
 .i3d-bom-hint { font-size: 11px; color: var(--text-muted); }
 </style>
