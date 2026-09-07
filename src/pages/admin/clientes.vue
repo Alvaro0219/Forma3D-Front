@@ -11,7 +11,7 @@
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre, teléfono o email" @update:model-value="onSearch" clearable>
-        <template #prepend><AppIcon name="search" :size="18" /></template>
+        <template #prepend><AppIcon name="search" :size="18" :bordered="false" /></template>
       </q-input>
     </div>
 
@@ -20,8 +20,8 @@
       empty-label="No hay clientes aún." @view="openDetail" @update:page="goToPage"
     >
       <template #actions="{ row }">
-        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
-        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
 
@@ -36,10 +36,10 @@
       :subtitle="detail.cliente?.telefono" :fields="detailFields" :loading="detailLoading"
     >
       <div class="row q-col-gutter-md q-mb-md">
-        <div class="col-6 col-md-3"><div class="i3d-lc-k">Total comprado</div><div class="mono text-weight-bold">{{ money(detail.estadisticas?.totalComprado) }}</div></div>
-        <div class="col-6 col-md-3"><div class="i3d-lc-k">Ventas</div><div class="mono text-weight-bold">{{ detail.estadisticas?.cantidadVentas || 0 }}</div></div>
-        <div class="col-6 col-md-3"><div class="i3d-lc-k">Pedidos</div><div class="mono text-weight-bold">{{ detail.estadisticas?.cantidadPedidos || 0 }}</div></div>
-        <div class="col-6 col-md-3"><div class="i3d-lc-k">Última compra</div><div class="mono text-weight-bold">{{ date(detail.estadisticas?.ultimaCompra) }}</div></div>
+        <div class="col-6 col-md-3"><div class="i3d-k">Total comprado</div><div class="mono text-weight-bold">{{ money(detail.estadisticas?.totalComprado) }}</div></div>
+        <div class="col-6 col-md-3"><div class="i3d-k">Ventas</div><div class="mono text-weight-bold">{{ detail.estadisticas?.cantidadVentas || 0 }}</div></div>
+        <div class="col-6 col-md-3"><div class="i3d-k">Pedidos</div><div class="mono text-weight-bold">{{ detail.estadisticas?.cantidadPedidos || 0 }}</div></div>
+        <div class="col-6 col-md-3"><div class="i3d-k">Última compra</div><div class="mono text-weight-bold">{{ date(detail.estadisticas?.ultimaCompra) }}</div></div>
       </div>
       <div class="text-subtitle2 q-mb-xs">Últimos pedidos</div>
       <q-list dense bordered class="rounded-borders q-mb-md">
@@ -84,8 +84,8 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 
 const columns = [
   { name: 'nombre', label: 'Nombre', field: 'nombre', sortable: true },
-  { name: 'telefono', label: 'Teléfono', field: 'telefono', mono: true },
-  { name: 'email', label: 'Email', field: 'email', hideLabelOnCard: true }
+  { name: 'telefono', label: 'Teléfono', field: 'telefono', mono: true, icon: 'phone' },
+  { name: 'email', label: 'Email', field: 'email', icon: 'mail' }
 ];
 
 const fields = [

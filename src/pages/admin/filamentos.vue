@@ -11,7 +11,7 @@
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por marca, color o ID de bobina" @update:model-value="onFilter" clearable>
-        <template #prepend><AppIcon name="search" :size="18" /></template>
+        <template #prepend><AppIcon name="search" :size="18" :bordered="false" /></template>
       </q-input>
       <q-select v-model="fTipo" :options="tipos" outlined dense clearable label="Tipo de filamento"
                 emit-value map-options style="width:180px" @update:model-value="onFilter" />
@@ -22,8 +22,13 @@
       empty-label="No hay bobinas cargadas." @view="openDetail" @update:page="goToPage"
     >
       <template #cell-disponible="{ row }">
-        <div class="mono">{{ row.pesoDisponible }} / {{ row.pesoOriginal }} g</div>
-        <q-linear-progress :value="row.pesoDisponible / row.pesoOriginal" :color="barColor(row)" size="6px" class="q-mt-xs rounded-borders" style="max-width:140px" />
+        <div class="i3d-bobina-progress">
+          <div class="i3d-progress-head">
+            <span class="i3d-v mono">{{ grams(row.pesoDisponible) }} / {{ grams(row.pesoOriginal) }}</span>
+            <span class="i3d-v mono">{{ restante(row) }}</span>
+          </div>
+          <q-linear-progress :value="row.pesoDisponible / row.pesoOriginal" :color="barColor(row)" size="6px" rounded />
+        </div>
       </template>
       <template #cell-color="{ value }">
         <div v-if="value" class="i3d-color-chip">
@@ -33,11 +38,10 @@
         <span v-else class="text-grey">—</span>
       </template>
       <template #cell-costoPorGramo="{ value }">{{ money(value) }}</template>
-      <template #cell-estado="{ value }"><StatusBadge :label="value" :status="value" /></template>
       <template #actions="{ row }">
         <q-btn flat dense round color="orange" size="sm" @click="openConsumo(row)"><AppIcon name="remove_circle_outline" :size="16" /><q-tooltip>Registrar consumo</q-tooltip></q-btn>
-        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
-        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
 
@@ -51,11 +55,10 @@
       v-model="detailDialog" :title="detailTitle" :subtitle="current.identificadorBobina" :fields="detailFields"
     >
       <template #header-side>
-        <span v-if="current.color" class="i3d-color-chip q-mr-sm">
+        <span v-if="current.color" class="i3d-color-chip">
           <ColorDot :color="current.color" />
           <span>{{ current.color }}</span>
         </span>
-        <StatusBadge :label="current.estado" :status="current.estado" />
       </template>
       <div class="text-subtitle2 q-mb-xs">Historial de movimientos</div>
       <LoadingState :loading="movLoading" :empty="!movLoading && movimientos.length === 0" empty-label="Sin movimientos.">
@@ -65,7 +68,7 @@
               <q-item-label>{{ m.tipo }} <span class="text-grey">· {{ m.referencia }}</span></q-item-label>
               <q-item-label caption class="mono">{{ dateTime(m.createdAt) }}</q-item-label>
             </q-item-section>
-            <q-item-section side><span class="mono" :class="m.cantidad < 0 ? 'text-negative' : 'text-positive'">{{ m.cantidad > 0 ? '+' : '' }}{{ m.cantidad }} g</span></q-item-section>
+            <q-item-section side><span class="mono" :class="m.cantidad < 0 ? 'text-negative' : 'text-positive'">{{ m.cantidad > 0 ? '+' : '' }}{{ grams(m.cantidad) }}</span></q-item-section>
           </q-item>
         </q-list>
       </LoadingState>
@@ -80,7 +83,7 @@
           <div class="q-mb-sm text-caption text-grey row items-center q-gutter-x-xs">
             <span>{{ consumoTarget?.marca }} {{ consumoTarget?.tipo }}</span>
             <ColorDot v-if="consumoTarget?.color" :color="consumoTarget.color" />
-            <span>{{ consumoTarget?.color }} — disponible {{ consumoTarget?.pesoDisponible }} g</span>
+            <span>{{ consumoTarget?.color }} — disponible <span class="mono">{{ grams(consumoTarget?.pesoDisponible) }}</span></span>
           </div>
           <q-input v-model.number="consumoGramos" type="number" label="Gramos consumidos" outlined dense />
           <q-input v-model="consumoRef" label="Referencia (opcional)" outlined dense class="q-mt-sm" />
@@ -101,7 +104,6 @@ import { useQuasar } from 'quasar';
 import ResourceList from '../../components/ResourceList.vue';
 import ResourceDialog from '../../components/ResourceDialog.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
-import StatusBadge from '../../components/StatusBadge.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import ColorDot from '../../components/ColorDot.vue';
@@ -109,12 +111,15 @@ import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
   fetchFilamentos, createFilamento, updateFilamento, deleteFilamento, consumirFilamento, fetchFilamentoMovimientos
 } from '../../services/api.js';
-import { formatMoney, formatDateTime } from '../../utils/format.js';
+import { formatMoney, formatDateTime, formatGrams, formatPercent } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
 
 const $q = useQuasar();
 const money = (n) => formatMoney(n);
 const dateTime = (d) => formatDateTime(d);
+const grams = (n) => formatGrams(n);
+/** % restante de la bobina, con el mismo criterio de decimales que el resto. */
+const restante = (r) => formatPercent(r.pesoOriginal ? (r.pesoDisponible / r.pesoOriginal) * 100 : 0, 0);
 
 const { items, pagination, loading, saving, reload, goToPage, create, update, remove } = useCrudResource({
   fetchFn: fetchFilamentos, createFn: createFilamento, updateFn: updateFilamento, deleteFn: deleteFilamento, label: 'la bobina'
@@ -124,12 +129,11 @@ const tipos = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'NYLON', 'OTRO'];
 
 const columns = [
   { name: 'identificadorBobina', label: 'ID Bobina', field: 'identificadorBobina', mono: true },
-  { name: 'marca', label: 'Marca', field: 'marca' },
-  { name: 'tipo', label: 'Tipo', field: 'tipo' },
-  { name: 'color', label: 'Color', field: 'color' },
-  { name: 'disponible', label: 'Disponible', field: 'pesoDisponible' },
-  { name: 'costoPorGramo', label: 'Costo/g', field: 'costoPorGramo', align: 'right', mono: true },
-  { name: 'estado', label: 'Estado', field: 'estado', align: 'center' }
+  { name: 'marca', label: 'Marca', field: 'marca', icon: 'tag' },
+  { name: 'tipo', label: 'Tipo', field: 'tipo', icon: 'category' },
+  { name: 'color', label: 'Color', field: 'color', icon: 'palette' },
+  { name: 'disponible', label: 'Disponible', field: 'pesoDisponible', icon: 'grain' },
+  { name: 'costoPorGramo', label: 'Costo/g', field: 'costoPorGramo', align: 'right', mono: true, icon: 'price' }
 ];
 
 const fields = [
@@ -221,4 +225,5 @@ onMounted(() => reload());
 
 <style scoped>
 .i3d-color-chip { display: inline-flex; align-items: center; gap: 6px; }
+.i3d-bobina-progress { max-width: 200px; }
 </style>

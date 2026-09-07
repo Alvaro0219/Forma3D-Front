@@ -11,7 +11,7 @@
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre o categoría" @update:model-value="onSearch" clearable>
-        <template #prepend><AppIcon name="search" :size="18" /></template>
+        <template #prepend><AppIcon name="search" :size="18" :bordered="false" /></template>
       </q-input>
     </div>
 
@@ -27,8 +27,8 @@
       <template #cell-costo="{ value }">{{ money(value) }}</template>
       <template #actions="{ row }">
         <q-btn flat dense round color="orange" size="sm" @click="openAjuste(row)"><AppIcon name="tune" :size="16" /><q-tooltip>Ajustar stock</q-tooltip></q-btn>
-        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
-        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
 
@@ -96,9 +96,9 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 
 const columns = [
   { name: 'nombre', label: 'Nombre', field: 'nombre', sortable: true },
-  { name: 'categoria', label: 'Categoría', field: 'categoria' },
-  { name: 'stock', label: 'Stock', field: 'stock', align: 'right' },
-  { name: 'costo', label: 'Costo unit.', field: 'costo', align: 'right', mono: true }
+  { name: 'categoria', label: 'Categoría', field: 'categoria', icon: 'category' },
+  { name: 'stock', label: 'Stock', field: 'stock', align: 'right', icon: 'inventory_2' },
+  { name: 'costo', label: 'Costo unit.', field: 'costo', align: 'right', mono: true, icon: 'price' }
 ];
 
 const fields = [

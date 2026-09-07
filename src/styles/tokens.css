@@ -4,10 +4,23 @@
    ============================================================ */
 
 :root {
-  /* Tipografía */
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-ui:      "Inter", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+  /* Tipografía: UNA sola familia en toda la app. La jerarquía se construye
+     con tamaño, peso y color — nunca cambiando de familia. Los números usan
+     tabular-nums (feature de la misma fuente), no una monoespaciada aparte. */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Escala tipográfica (única fuente de verdad de los tamaños) */
+  --fs-display: 26px; /* título de página */
+  --fs-title:   17px; /* título de tarjeta */
+  --fs-lg:      15px; /* valor destacado */
+  --fs-body:    14px; /* texto y valores */
+  --fs-meta:    13px; /* metadatos de tarjeta */
+  --fs-label:   11px; /* etiquetas en MAYÚSCULA */
+
+  /* Pesos */
+  --fw-title:  700;
+  --fw-value:  500;
+  --fw-label:  600;
 
   /* Escala de espaciado (base 8) */
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;

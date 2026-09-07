@@ -13,83 +13,58 @@
                 emit-value map-options style="width:220px" @update:model-value="onFilter" />
     </div>
 
-    <LoadingState :loading="loading" :empty="!loading && items.length === 0" empty-label="No hay impresiones registradas.">
-      <div class="i3d-imp-grid i3d-build-stagger">
-        <div v-for="imp in items" :key="imp._id" class="i3d-imp-card">
-          <div class="i3d-imp-top">
-            <span class="i3d-imp-num mono">#{{ imp.numero }}</span>
-            <StatusBadge :label="imp.estado" :status="imp.estado" />
-          </div>
-
-          <div class="i3d-imp-title">{{ imp.producto?.nombre || 'Sin producto' }}</div>
-
-          <q-linear-progress
-            :indeterminate="imp.estado === 'imprimiendo'"
-            :value="progressValue(imp)"
-            :color="progressColor(imp.estado)"
-            track-color="grey-9" size="8px" rounded class="q-my-sm"
-          />
-
-          <div class="i3d-imp-meta">
-            <div><AppIcon name="print" :size="14" :bordered="false" /> {{ imp.impresora?.modelo || '—' }}</div>
-            <div class="i3d-imp-bobinas">
-              <AppIcon name="grain" :size="14" :bordered="false" />
-              <span v-if="!(imp.filamentos || []).length">—</span>
-              <span v-else-if="imp.filamentos.length === 1" class="i3d-color-chip">
-                <ColorDot :color="imp.filamentos[0].filamento?.color" />
-                <span>{{ bobinaLabel(imp.filamentos[0].filamento) }}</span>
-              </span>
-              <span v-else class="i3d-color-chip">
-                <span class="i3d-color-stack">
-                  <ColorDot
-                    v-for="(b, i) in imp.filamentos" :key="i"
-                    :color="b.filamento?.color" class="i3d-color-stack-dot"
-                  />
-                </span>
-                <span>{{ imp.filamentos.length }} bobinas · {{ imp.pesoTotal }} g</span>
-              </span>
-            </div>
-          </div>
-
-          <div class="i3d-imp-stats">
-            <div><span class="i3d-imp-k">Piezas</span><span class="mono">{{ imp.cantidadPiezas }}</span></div>
-            <div><span class="i3d-imp-k">Peso</span><span class="mono">{{ imp.pesoTotal }} g</span></div>
-            <div><span class="i3d-imp-k">Tiempo</span><span class="mono">{{ fmtMin(imp.tiempo) }}</span></div>
-          </div>
-
-          <div v-if="imp.consumoRegistrado" class="i3d-imp-cost">
-            <span class="i3d-imp-k">Costo total</span>
-            <span class="mono i3d-imp-cost-val">{{ money(imp.costoTotal) }}</span>
-          </div>
-          <div v-else-if="imp.estado === 'terminada'" class="i3d-imp-warn">
-            <AppIcon name="warning" :size="14" color="warning" :bordered="false" /> Terminada sin descontar stock
-            <q-btn flat dense no-caps size="sm" label="Descontar ahora" @click="finalizar(imp)" />
-          </div>
-
-          <div class="i3d-imp-actions">
-            <q-btn flat dense round size="sm" @click="openDetail(imp)"><AppIcon name="visibility" :size="16" /><q-tooltip>Detalle</q-tooltip></q-btn>
-            <q-btn-dropdown flat dense size="sm" dropdown-icon="none" no-icon-animation>
-              <template #toggle><AppIcon name="swap_horiz" :size="16" /></template>
-              <q-list dense>
-                <q-item v-for="e in estados" :key="e.value" clickable v-close-popup @click="setEstado(imp, e.value)">
-                  <q-item-section>{{ e.label }}</q-item-section>
-                </q-item>
-              </q-list>
-              <q-tooltip>Cambiar estado</q-tooltip>
-            </q-btn-dropdown>
-            <q-space />
-            <q-btn flat dense round size="sm" @click="openEdit(imp)"><AppIcon name="edit" :size="16" /></q-btn>
-            <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(imp)"><AppIcon name="delete" :size="16" /></q-btn>
-          </div>
-        </div>
-      </div>
-      <div class="i3d-reslist-footer" v-if="pagination.total > 0">
-        <span class="i3d-reslist-count mono">{{ pagination.total }} registro(s)</span>
-        <q-space />
-        <q-pagination v-if="pagination.totalPages > 1" :model-value="pagination.page" :max="pagination.totalPages"
-                      :max-pages="6" direction-links boundary-numbers @update:model-value="goToPage" />
-      </div>
-    </LoadingState>
+    <ResourceList
+      :rows="items" :columns="columns" :loading="loading" :pagination="pagination"
+      empty-label="No hay impresiones registradas." @view="openDetail" @update:page="goToPage"
+    >
+      <template #cell-producto="{ row }">{{ row.producto?.nombre || 'Sin producto' }}</template>
+      <template #cell-impresora="{ row }">{{ row.impresora?.modelo || '—' }}</template>
+      <template #cell-bobinas="{ row }">
+        <span v-if="!(row.filamentos || []).length" class="text-grey">—</span>
+        <span v-else-if="row.filamentos.length === 1" class="i3d-color-chip">
+          <ColorDot :color="row.filamentos[0].filamento?.color" />
+          <span>{{ bobinaId(row.filamentos[0].filamento) }}</span>
+        </span>
+        <span v-else class="i3d-color-chip">
+          <span class="i3d-color-stack">
+            <ColorDot
+              v-for="(b, i) in row.filamentos" :key="i"
+              :color="b.filamento?.color" class="i3d-color-stack-dot"
+            />
+          </span>
+          <span>{{ row.filamentos.length }} bobinas</span>
+        </span>
+      </template>
+      <template #cell-piezas="{ value }">{{ num(value) }}</template>
+      <template #cell-peso="{ value }">{{ grams(value) }}</template>
+      <template #cell-tiempo="{ value }">{{ fmtMin(value) }}</template>
+      <template #cell-costo="{ row }">
+        <span v-if="row.consumoRegistrado" class="i3d-highlight-value">{{ money(row.costoTotal) }}</span>
+        <span v-else class="text-grey">—</span>
+      </template>
+      <template #cell-estado="{ value }"><StatusBadge :label="value" :status="value" /></template>
+      <template #actions="{ row }">
+        <q-btn
+          v-if="row.estado === 'terminada' && !row.consumoRegistrado"
+          flat dense round color="warning" size="sm" @click="finalizar(row)"
+        >
+          <AppIcon name="warning" :size="16" /><q-tooltip>Terminada sin descontar stock — descontar ahora</q-tooltip>
+        </q-btn>
+        <q-btn flat dense round size="sm">
+          <AppIcon name="swap_horiz" :size="16" />
+          <q-menu>
+            <q-list dense>
+              <q-item v-for="e in estados" :key="e.value" clickable v-close-popup @click="setEstado(row, e.value)">
+                <q-item-section>{{ e.label }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+          <q-tooltip>Cambiar estado</q-tooltip>
+        </q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
+      </template>
+    </ResourceList>
 
     <!-- Crear / editar impresion -->
     <q-dialog v-model="dialog" persistent>
@@ -162,7 +137,7 @@
               foot-label="Total" :foot-value="`${totalGramos} g`"
             >
               <template #cell-bobina="{ row }">
-                <div class="i3d-color-chip"><ColorDot :color="row.color" /><span>{{ row.nombre }}</span></div>
+                <div class="i3d-color-chip"><ColorDot :color="row.color" /><span>{{ row.identificadorBobina }}</span></div>
               </template>
               <template #actions="{ index }">
                 <q-btn flat dense round size="sm" color="negative" @click="bobinas.splice(index,1)"><AppIcon name="close" :size="14" /></q-btn>
@@ -191,19 +166,19 @@
       <div class="text-subtitle2 q-mb-xs">Bobinas consumidas</div>
       <ItemsTable v-if="detail.filamentos?.length" class="q-mb-md" :rows="detail.filamentos" :columns="bobinaColumns">
         <template #cell-bobina="{ row }">
-          <div class="i3d-color-chip"><ColorDot :color="row.filamento?.color" /><span>{{ bobinaLabel(row.filamento) }}</span></div>
+          <div class="i3d-color-chip"><ColorDot :color="row.filamento?.color" /><span>{{ bobinaId(row.filamento) }}</span></div>
         </template>
       </ItemsTable>
       <div v-else class="text-grey q-mb-md">Sin bobinas cargadas.</div>
 
       <template v-if="detail.consumoRegistrado">
-        <div class="i3d-imp-k q-mb-xs">Costo (calculado por el sistema)</div>
+        <div class="i3d-k q-mb-xs">Costo (calculado por el sistema)</div>
         <div class="row q-col-gutter-sm">
           <div class="col-6">Material <b class="mono float-right">{{ money(detail.costoMaterial) }}</b></div>
-          <div class="col-6">Total <b class="mono float-right i3d-imp-cost-val">{{ money(detail.costoTotal) }}</b></div>
+          <div class="col-6">Total <b class="mono float-right i3d-highlight-value">{{ money(detail.costoTotal) }}</b></div>
         </div>
       </template>
-      <div v-if="detail.notas" class="q-mt-md"><div class="i3d-imp-k">Notas</div>{{ detail.notas }}</div>
+      <div v-if="detail.notas" class="q-mt-md"><div class="i3d-k">Notas</div>{{ detail.notas }}</div>
     </RecordDetailDialog>
   </div>
 </template>
@@ -211,7 +186,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
-import LoadingState from '../../components/LoadingState.vue';
+import ResourceList from '../../components/ResourceList.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import AppIcon from '../../components/AppIcon.vue';
@@ -222,11 +197,13 @@ import {
   fetchImpresiones, createImpresion, updateImpresion, deleteImpresion, registrarConsumoImpresion,
   fetchProductos, fetchFilamentos, fetchImpresoras
 } from '../../services/api.js';
-import { formatMoney } from '../../utils/format.js';
+import { formatMoney, formatNumber, formatGrams } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
 
 const $q = useQuasar();
 const money = (n) => formatMoney(n);
+const num = (n) => formatNumber(n);
+const grams = (n) => formatGrams(n);
 const estados = [
   { label: 'PENDIENTE', value: 'pendiente' },
   { label: 'IMPRIMIENDO', value: 'imprimiendo' },
@@ -239,6 +216,18 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
   fetchFn: fetchImpresiones, createFn: createImpresion, updateFn: updateImpresion, deleteFn: deleteImpresion, label: 'la impresión'
 });
 
+const columns = [
+  { name: 'numero', label: 'N°', field: 'numero', mono: true },
+  { name: 'producto', label: 'Producto', field: 'producto', icon: 'category' },
+  { name: 'impresora', label: 'Impresora', field: 'impresora', icon: 'print' },
+  { name: 'bobinas', label: 'Bobinas', field: 'filamentos', icon: 'grain' },
+  { name: 'piezas', label: 'Piezas', field: 'cantidadPiezas', align: 'right', mono: true, icon: 'layers' },
+  { name: 'peso', label: 'Peso', field: 'pesoTotal', align: 'right', mono: true, icon: 'weight' },
+  { name: 'tiempo', label: 'Tiempo', field: 'tiempo', align: 'right', mono: true, icon: 'schedule' },
+  { name: 'costo', label: 'Costo', field: 'costoTotal', align: 'right', mono: true, icon: 'price' },
+  { name: 'estado', label: 'Estado', field: 'estado', align: 'center', titleSide: true }
+];
+
 const fEstado = ref(null);
 const dialog = ref(false);
 const editing = ref(false);
@@ -250,7 +239,7 @@ const form = ref(emptyForm());
 const bobinas = ref([]);
 const bobinaColumns = [
   { name: 'bobina', label: 'Bobina' },
-  { name: 'gramos', label: 'Gramos', align: 'right', mono: true, format: (v) => `${v} g` }
+  { name: 'gramos', label: 'Gramos', align: 'right', mono: true, format: (v) => formatGrams(v) }
 ];
 const draftBobina = ref({ filamento: null, gramos: null });
 
@@ -267,19 +256,11 @@ function emptyForm() {
 
 const totalGramos = computed(() => bobinas.value.reduce((a, b) => a + (Number(b.gramos) || 0), 0));
 
-const fmtMin = (m) => {
-  const n = Number(m) || 0;
-  if (!n) return '—';
-  const h = Math.floor(n / 60); const min = n % 60;
-  return h ? `${h}h ${min}m` : `${min}m`;
-};
-const progressColor = (e) => ({ imprimiendo: 'secondary', terminada: 'positive', fallida: 'negative' }[e] || 'grey');
-const progressValue = (imp) => {
-  if (imp.estado === 'imprimiendo') return undefined;
-  return ['terminada', 'fallida', 'cancelada'].includes(imp.estado) ? 1 : 0;
-};
+// El tiempo de impresion se carga en minutos: se muestra siempre en minutos, sin convertir a horas.
+const fmtMin = (m) => (m ? `${formatNumber(m)} min` : '—');
 
 const bobinaLabel = (f) => (f ? `${f.identificadorBobina || ''} ${f.marca || ''} ${f.tipo || ''} ${f.color || ''}`.trim() : '—');
+const bobinaId = (f) => f?.identificadorBobina || '—';
 const selectedBobinaOption = computed(() => filamentoOptions.value.find((o) => o.value === draftBobina.value.filamento) || null);
 
 const detailFields = computed(() => {
@@ -314,7 +295,7 @@ function openEdit(imp) {
   };
   bobinas.value = (imp.filamentos || []).map((b) => ({
     filamento: b.filamento?._id || b.filamento,
-    nombre: bobinaLabel(b.filamento),
+    identificadorBobina: b.filamento?.identificadorBobina,
     color: b.filamento?.color,
     gramos: b.gramos
   }));
@@ -330,7 +311,7 @@ function addBobina() {
   if (gr <= 0) { $q.notify({ type: 'warning', message: 'Ingresá los gramos consumidos' }); return; }
   if (bobinas.value.some((b) => b.filamento === id)) { $q.notify({ type: 'warning', message: 'Esa bobina ya está en la lista' }); return; }
   const f = filamentos.value.find((x) => x._id === id);
-  bobinas.value.push({ filamento: id, nombre: bobinaLabel(f), color: f?.color, gramos: gr });
+  bobinas.value.push({ filamento: id, identificadorBobina: f?.identificadorBobina, color: f?.color, gramos: gr });
   resetDraft();
 }
 
@@ -422,34 +403,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.i3d-imp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.i3d-imp-card {
-  background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-  padding: 16px; display: flex; flex-direction: column;
-  transition: border-color var(--dur-base) var(--ease-standard);
-}
-.i3d-imp-card:hover { border-color: var(--border-strong); }
-.i3d-imp-top { display: flex; align-items: center; justify-content: space-between; }
-.i3d-imp-num { color: var(--text-muted); font-size: 13px; font-weight: 600; }
-.i3d-imp-title { font-weight: 600; font-size: 16px; margin-top: 6px; color: var(--text-primary); }
-.i3d-imp-meta { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
-.i3d-imp-bobinas { display: flex; align-items: center; gap: 6px; }
 .i3d-color-chip { display: inline-flex; align-items: center; gap: 6px; }
 .i3d-color-stack { display: inline-flex; align-items: center; }
 .i3d-color-stack-dot { margin-left: -6px; }
 .i3d-color-stack-dot:first-child { margin-left: 0; }
-.i3d-imp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
-.i3d-imp-stats > div { display: flex; flex-direction: column; }
-.i3d-imp-k { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
-.i3d-imp-cost { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--bg-sunken); border-radius: var(--radius-sm); margin-bottom: 10px; }
-.i3d-imp-cost-val { color: var(--success); font-weight: 700; }
-.i3d-imp-warn {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  font-size: 12px; color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 12%, transparent);
-  border-radius: var(--radius-sm); padding: 6px 8px; margin-bottom: 10px;
-}
-.i3d-imp-actions { display: flex; align-items: center; gap: 2px; margin-top: auto; border-top: 1px solid var(--border); padding-top: 8px; }
 
 .i3d-imp-dialog { width: 700px; max-width: 94vw; }
 .i3d-imp-dialog-body { max-height: 70vh; overflow-y: auto; }

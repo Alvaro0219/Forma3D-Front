@@ -15,19 +15,97 @@
   margin-bottom: var(--sp-5);
 }
 
+/* En mobile el boton de accion (Nuevo X, o el grupo de accesos rapidos del
+   dashboard) siempre va debajo del titulo/subtitulo, nunca al lado — sin
+   depender de si el texto del titulo + boton alcanzan a entrar en una sola
+   linea (eso es lo que generaba la inconsistencia entre modulos). */
+@media (max-width: 599px) {
+  .i3d-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .i3d-page-title {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 700;
+  font-size: var(--fs-display);
+  font-weight: var(--fw-title);
   letter-spacing: -0.02em;
   color: var(--text-primary);
   margin: 0;
+  line-height: 1.2;
 }
 
 .i3d-page-subtitle {
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--fs-body);
   margin: 4px 0 0;
+}
+
+/* ============================================================
+   Primitivas de jerarquía de tarjeta (título / etiqueta / valor).
+   Se usan en TODAS las tarjetas para que el ritmo visual sea el
+   mismo: título prominente, etiquetas chicas en MAYÚSCULA atenuada
+   y valores en peso medio, todo alineado a la izquierda.
+   ============================================================ */
+
+/* Título de tarjeta */
+.i3d-card-title {
+  font-size: var(--fs-title);
+  font-weight: var(--fw-title);
+  color: var(--text-primary);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Etiqueta: SIEMPRE mayúscula, mismo tamaño y color tenue */
+.i3d-k {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Valor */
+.i3d-v {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-value);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* Línea de metadato: ícono atenuado + texto, alineados a la izquierda */
+.i3d-meta { display: flex; flex-direction: column; gap: 2px; }
+.i3d-meta-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 5px 0;
+  font-size: var(--fs-meta);
+  color: var(--text-secondary);
+  min-width: 0;
+}
+.i3d-meta-line > .i3d-icon { color: var(--text-muted); flex-shrink: 0; }
+.i3d-meta-line .i3d-meta-text { min-width: 0; overflow-wrap: anywhere; }
+
+/* Par etiqueta-valor apilado (etiqueta arriba, valor abajo) */
+.i3d-kv { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+/* Bloque agrupador con separador sutil */
+.i3d-block + .i3d-block {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+/* Barra de progreso con etiqueta y porcentaje alineados */
+.i3d-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: 6px;
 }
 
 .i3d-section-card {
@@ -75,26 +153,31 @@
 .i3d-kpi.i3d-kpi--warning::after { background: var(--warning); }
 
 .i3d-kpi-label {
-  color: var(--text-secondary);
-  font-size: 12px;
+  color: var(--text-muted);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
   text-transform: uppercase;
-  letter-spacing: .05em;
-  margin-bottom: 8px;
+  letter-spacing: .06em;
+  margin-bottom: var(--sp-2);
 }
 
 .i3d-kpi-value {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 30px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: var(--fw-title);
+  letter-spacing: -0.02em;
   color: var(--text-primary);
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .i3d-kpi-value.i3d-accent { color: var(--accent); }
 .i3d-kpi-value.i3d-positive { color: var(--success); }
 .i3d-kpi-value.i3d-warning { color: var(--warning); }
 .i3d-kpi-value.i3d-tech { color: var(--tech); }
+
+/* Valor monetario destacado en listas/tarjetas (ej. costo de una impresión,
+   total de un pedido): mismo tratamiento en toda la app. */
+.i3d-highlight-value { color: var(--success); font-weight: var(--fw-title); }
 
 /* Footer de listas (paginador) — compartido entre ResourceList y las grillas de tarjetas */
 .i3d-reslist-footer { display: flex; align-items: center; margin-top: var(--sp-4); gap: 12px; }

@@ -15,12 +15,14 @@
             </q-td>
           </template>
           <template #body-cell-__actions="props">
-            <q-td :props="props" class="text-right i3d-reslist-actions">
-              <q-btn flat dense round size="sm" @click="$emit('view', props.row)">
-                <AppIcon name="visibility" :size="16" />
-                <q-tooltip>Ver</q-tooltip>
-              </q-btn>
-              <slot name="actions" :row="props.row" />
+            <q-td :props="props" class="text-right">
+              <div class="i3d-reslist-actions">
+                <q-btn flat dense round size="sm" @click="$emit('view', props.row)">
+                  <AppIcon name="visibility" :size="16" color="accent" />
+                  <q-tooltip>Ver</q-tooltip>
+                </q-btn>
+                <slot name="actions" :row="props.row" />
+              </div>
             </q-td>
           </template>
         </q-table>
@@ -30,11 +32,26 @@
       <div v-else class="i3d-card-list">
         <div v-for="row in rows" :key="row[rowKey]" class="i3d-list-card" @click="$emit('view', row)">
           <slot name="card" :row="row">
-            <div class="i3d-list-card-title">{{ cardTitle ? cardTitle(row) : formatCell(columns[0], row) }}</div>
-            <div class="i3d-list-card-rows">
-              <div v-for="col in bodyColumns" :key="col.name" class="i3d-list-card-row">
-                <span v-if="!col.hideLabelOnCard" class="i3d-lc-k">{{ col.label }}</span>
-                <span class="i3d-lc-v" :class="col.mono ? 'mono' : ''">
+            <div class="i3d-card-title-row">
+              <div class="i3d-card-title">
+                <template v-if="cardTitle">{{ cardTitle(row) }}</template>
+                <slot v-else :name="`cell-${columns[0]?.name}`" :row="row" :value="row[columns[0]?.field]">
+                  {{ formatCell(columns[0], row) }}
+                </slot>
+              </div>
+              <div v-if="titleSideColumns.length" class="i3d-card-title-side">
+                <template v-for="col in titleSideColumns" :key="col.name">
+                  <slot :name="`cell-${col.name}`" :row="row" :value="row[col.field]">
+                    {{ formatCell(col, row) }}
+                  </slot>
+                </template>
+              </div>
+            </div>
+            <div class="i3d-meta">
+              <div v-for="col in bodyColumns" :key="col.name" class="i3d-meta-line">
+                <AppIcon v-if="col.icon" :name="col.icon" :size="15" :bordered="false" color="muted" />
+                <span v-else-if="!col.hideLabelOnCard" class="i3d-k i3d-lc-key">{{ col.label }}</span>
+                <span class="i3d-meta-text i3d-v" :class="col.mono ? 'mono' : ''">
                   <slot :name="`cell-${col.name}`" :row="row" :value="row[col.field]">
                     {{ formatCell(col, row) }}
                   </slot>
@@ -92,7 +109,9 @@ const $q = useQuasar();
 const isDesktop = computed(() => !props.alwaysCards && $q.screen.gt.sm);
 
 // La primera columna ya se muestra como titulo de la tarjeta: no repetirla como fila con leyenda.
-const bodyColumns = computed(() => props.columns.filter((c) => c.name !== '__actions' && c.name !== props.columns[0]?.name));
+// Las columnas con titleSide (ej. estado) se muestran al lado del titulo, tampoco van en el cuerpo.
+const bodyColumns = computed(() => props.columns.filter((c) => c.name !== '__actions' && c.name !== props.columns[0]?.name && !c.titleSide));
+const titleSideColumns = computed(() => props.columns.filter((c) => c.titleSide));
 
 const tableColumns = computed(() => [
   ...props.columns.map((c) => ({
@@ -112,21 +131,27 @@ function formatCell(col, row) {
 <style scoped>
 .i3d-reslist-table :deep(.q-table) { background: transparent; }
 
-.i3d-card-list { display: flex; flex-direction: column; gap: 12px; }
+.i3d-card-list { display: flex; flex-direction: column; gap: var(--sp-3); }
 .i3d-list-card {
   background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-  padding: 14px; cursor: pointer;
+  padding: var(--sp-4); cursor: pointer;
   transition: border-color var(--dur-micro) var(--ease-standard);
 }
 .i3d-list-card:active { border-color: var(--accent); }
-.i3d-list-card-title { font-weight: 600; font-size: 16px; color: var(--text-primary); margin-bottom: 10px; }
-.i3d-list-card-rows { display: flex; flex-direction: column; gap: 6px; }
-.i3d-list-card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; }
-.i3d-lc-k { color: var(--text-muted); text-transform: uppercase; font-size: 10px; letter-spacing: .04em; flex-shrink: 0; }
-.i3d-lc-v { color: var(--text-primary); text-align: right; flex: 1; }
-.i3d-list-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 2px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+/* Titulo + columna titleSide (ej. estado) en la misma fila, arriba a la derecha */
+.i3d-card-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.i3d-card-title-side { display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0; }
+/* Ancho fijo para las etiquetas sin icono: los valores quedan alineados entre si */
+.i3d-lc-key { flex-shrink: 0; min-width: 78px; }
+.i3d-list-card-actions {
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2);
+  margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--border);
+}
 
 .i3d-reslist-footer { display: flex; align-items: center; margin-top: 16px; gap: 12px; }
 .i3d-reslist-count { color: var(--text-muted); font-size: 12px; }
-.i3d-reslist-actions .q-btn { margin-left: 2px; }
+/* display:flex ignora los espacios en blanco del template: separacion pareja
+   entre el "ver" automatico y los botones que agrega cada pagina via #actions,
+   sin importar como esten formateadas esas lineas. */
+.i3d-reslist-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2); }
 </style>

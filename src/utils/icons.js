@@ -8,7 +8,8 @@ import {
   ChevronDown, Disc3, Inbox, Boxes, Layers, Sun, Truck, Lock, LogOut, Menu,
   PanelLeftClose, Users, CreditCard, Printer, ClipboardList, Minus,
   MinusCircle, Save, Clock, Search, Settings, Store, ArrowLeftRight,
-  SlidersHorizontal, Upload, Box, Eye, EyeOff, TriangleAlert, Palette
+  SlidersHorizontal, Upload, Box, Eye, EyeOff, TriangleAlert, Palette,
+  Phone, Mail, Tag, DollarSign, CalendarDays, TrendingUp, Hash, Weight
 } from '@lucide/vue';
 
 export const ICONS = {
@@ -46,6 +47,15 @@ export const ICONS = {
   menu_open: PanelLeftClose,
   palette: Palette,
   people: Users,
+  // Metadatos de tarjeta
+  phone: Phone,
+  mail: Mail,
+  tag: Tag,
+  price: DollarSign,
+  calendar: CalendarDays,
+  trending_up: TrendingUp,
+  hash: Hash,
+  weight: Weight,
   point_of_sale: CreditCard,
   print: Printer,
   receipt_long: ClipboardList,

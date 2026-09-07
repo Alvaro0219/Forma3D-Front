@@ -76,7 +76,7 @@
                   <q-item-label caption>{{ imp.consumo }} kW · {{ money(imp.costoHora) }}/h · <span class="text-uppercase">{{ imp.estado }}</span></q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-btn flat dense round color="negative" @click="removeImpresora(imp)"><AppIcon name="delete" :size="16" /></q-btn>
+                  <q-btn flat dense round color="negative" @click="removeImpresora(imp)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
                 </q-item-section>
               </q-item>
               <q-item v-if="!impresoras.length"><q-item-section class="text-grey">Sin impresoras cargadas</q-item-section></q-item>

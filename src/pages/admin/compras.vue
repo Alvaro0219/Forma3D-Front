@@ -30,7 +30,7 @@
     >
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
       <ItemsTable :rows="current.items || []" :columns="itemColumns" />
-      <div v-if="current.observaciones" class="q-mt-sm"><div class="i3d-lc-k">Observaciones</div>{{ current.observaciones }}</div>
+      <div v-if="current.observaciones" class="q-mt-sm"><div class="i3d-k">Observaciones</div>{{ current.observaciones }}</div>
     </RecordDetailDialog>
 
     <!-- Nueva compra -->
@@ -127,11 +127,11 @@ const { items, pagination, loading, saving, reload, goToPage, create } = useCrud
 });
 
 const columns = [
-  { name: 'fecha', label: 'Fecha', field: 'fecha', mono: true },
-  { name: 'proveedor', label: 'Proveedor', field: 'proveedor' },
-  { name: 'comprobante', label: 'Comprobante', field: 'comprobante' },
-  { name: 'items', label: 'Ítems', field: 'items' },
-  { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true }
+  { name: 'fecha', label: 'Fecha', field: 'fecha', mono: true, icon: 'calendar' },
+  { name: 'proveedor', label: 'Proveedor', field: 'proveedor', icon: 'local_shipping' },
+  { name: 'comprobante', label: 'Comprobante', field: 'comprobante', icon: 'description' },
+  { name: 'items', label: 'Ítems', field: 'items', icon: 'layers' },
+  { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true, icon: 'price' }
 ];
 
 const fDesde = ref('');

@@ -30,8 +30,8 @@
     <div v-else class="i3d-items-cards">
       <div v-for="(row, i) in rows" :key="rowKey ? row[rowKey] : i" class="i3d-items-card">
         <div v-for="col in columns" :key="col.name" class="i3d-items-line">
-          <span class="i3d-items-k">{{ col.label }}</span>
-          <span class="i3d-items-v" :class="col.mono ? 'mono' : ''">
+          <span class="i3d-k">{{ col.label }}</span>
+          <span class="i3d-items-v i3d-v" :class="col.mono ? 'mono' : ''">
             <slot :name="`cell-${col.name}`" :row="row" :index="i">{{ formatCell(col, row) }}</slot>
           </span>
         </div>
@@ -75,11 +75,10 @@ function formatCell(col, row) {
 .i3d-items-cards { display: flex; flex-direction: column; gap: 10px; }
 .i3d-items-card {
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 10px 12px; background: var(--bg-sunken);
+  padding: var(--sp-3) var(--sp-4); background: var(--bg-sunken);
 }
-.i3d-items-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 13px; }
-.i3d-items-k { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); flex-shrink: 0; }
-.i3d-items-v { color: var(--text-primary); text-align: right; min-width: 0; }
+.i3d-items-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); padding: 4px 0; }
+.i3d-items-v { text-align: right; min-width: 0; }
 .i3d-items-actions { display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
 .i3d-items-foot {
   display: flex; align-items: center; justify-content: space-between;

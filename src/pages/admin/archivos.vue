@@ -11,7 +11,7 @@
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350" label="Buscar por nombre o código"
                @update:model-value="onSearch" clearable>
-        <template #prepend><AppIcon name="search" :size="18" /></template>
+        <template #prepend><AppIcon name="search" :size="18" :bordered="false" /></template>
       </q-input>
     </div>
 
@@ -31,8 +31,8 @@
           <div class="i3d-arc-actions">
             <q-btn flat dense no-caps size="sm" @click="openVersions(a)"><AppIcon name="layers" :size="15" class="q-mr-xs" />Versiones</q-btn>
             <q-space />
-            <q-btn flat dense round size="sm" @click="openEdit(a)"><AppIcon name="edit" :size="16" /></q-btn>
-            <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(a)"><AppIcon name="delete" :size="16" /></q-btn>
+            <q-btn flat dense round size="sm" @click="openEdit(a)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+            <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(a)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
           </div>
         </div>
       </div>
@@ -65,26 +65,23 @@
               <q-select v-model="form.producto" :options="productoOptions" outlined dense clearable use-input
                         label="Producto asociado" emit-value map-options @filter="filterProductos" />
             </div>
-            <div class="col-4"><q-input v-model.number="form.pesoImpresion" type="number" outlined dense label="Peso (g)" /></div>
-            <div class="col-4"><q-input v-model.number="form.tiempoImpresion" type="number" outlined dense label="Tiempo (min)" /></div>
-            <div class="col-4"><q-input v-model="form.configuracionImpresion" outlined dense label="Config" /></div>
             <div class="col-12"><q-input v-model="form.descripcion" type="textarea" autogrow outlined dense label="Descripción" /></div>
           </div>
 
           <!-- Fotos / previsualizaciones -->
           <div class="i3d-arc-fotos">
-            <div class="i3d-imp-k q-mb-xs">Fotos / previsualizaciones</div>
+            <div class="i3d-k q-mb-xs">Fotos / previsualizaciones</div>
             <div class="i3d-arc-thumbs">
               <div v-for="(url, i) in form.fotos" :key="i" class="i3d-arc-thumb">
                 <img :src="url" alt="foto" />
                 <q-btn dense flat round size="xs" color="negative" @click="form.fotos.splice(i,1)"><AppIcon name="close" :size="12" /></q-btn>
               </div>
               <q-file :model-value="null" accept="image/jpeg,image/png,image/webp" outlined dense
-                      class="i3d-arc-addfoto" label="+ Foto" :loading="img.uploading" @update:model-value="onFotoPick">
+                      class="i3d-arc-addfoto" label="+ Foto" :loading="imgUploading" @update:model-value="onFotoPick">
                 <template #prepend><AppIcon name="add_photo_alternate" :size="18" /></template>
               </q-file>
             </div>
-            <q-linear-progress v-if="img.uploading" :value="img.progress/100" color="primary" size="4px" class="q-mt-xs" />
+            <q-linear-progress v-if="imgUploading" :value="imgProgress/100" color="primary" size="4px" class="q-mt-xs" />
           </div>
         </q-card-section>
         <q-separator />
@@ -128,25 +125,25 @@
           <q-separator class="q-my-md" />
 
           <!-- Agregar versión -->
-          <div class="i3d-imp-k q-mb-sm">Nueva versión</div>
+          <div class="i3d-k q-mb-sm">Nueva versión</div>
           <q-input v-model="newVersion.cambios" outlined dense type="textarea" autogrow label="Cambios de esta versión" class="q-mb-sm" />
           <div class="row q-col-gutter-sm">
             <div class="col-6">
               <q-file :model-value="null" accept=".stl" outlined dense label="Archivo STL"
-                      :loading="modelUp.uploading && upTarget==='stl'" @update:model-value="(f)=>onModelPick('stl', f)">
+                      :loading="modelUploading && upTarget==='stl'" @update:model-value="(f)=>onModelPick('stl', f)">
                 <template #prepend><AppIcon name="upload_file" :size="18" /></template>
               </q-file>
               <div v-if="newVersion.archivoStl" class="i3d-uploaded mono"><AppIcon name="check" :size="14" color="success" :bordered="false" /> STL cargado</div>
             </div>
             <div class="col-6">
               <q-file :model-value="null" accept=".3mf" outlined dense label="Archivo 3MF"
-                      :loading="modelUp.uploading && upTarget==='3mf'" @update:model-value="(f)=>onModelPick('3mf', f)">
+                      :loading="modelUploading && upTarget==='3mf'" @update:model-value="(f)=>onModelPick('3mf', f)">
                 <template #prepend><AppIcon name="upload_file" :size="18" /></template>
               </q-file>
               <div v-if="newVersion.archivo3mf" class="i3d-uploaded mono"><AppIcon name="check" :size="14" color="success" :bordered="false" /> 3MF cargado</div>
             </div>
           </div>
-          <q-linear-progress v-if="modelUp.uploading" :value="modelUp.progress/100" color="primary" size="6px" class="q-mt-sm rounded-borders" />
+          <q-linear-progress v-if="modelUploading" :value="modelProgress/100" color="primary" size="6px" class="q-mt-sm rounded-borders" />
           <q-toggle v-model="newVersion.esActual" label="Marcar como versión actual" class="q-mt-sm" />
         </q-card-section>
         <q-separator />
@@ -182,8 +179,8 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 });
 
 // Uploads: imagenes (fotos) y modelos (STL/3MF)
-const img = useImageUpload();
-const modelUp = useFileUpload();
+const { uploading: imgUploading, progress: imgProgress, uploadImage } = useImageUpload();
+const { uploading: modelUploading, progress: modelProgress, uploadFile } = useFileUpload();
 
 const search = ref('');
 const dialog = ref(false);
@@ -202,8 +199,7 @@ const clienteOptions = ref([]);
 const productoOptions = ref([]);
 
 function emptyForm() {
-  return { nombre: '', codigo: '', categoria: '', cliente: null, producto: null,
-    descripcion: '', configuracionImpresion: '', pesoImpresion: null, tiempoImpresion: null, fotos: [] };
+  return { nombre: '', codigo: '', categoria: '', cliente: null, producto: null, descripcion: '', fotos: [] };
 }
 const currentVersion = (a) => (a.versiones || []).find((v) => v.esActual) || (a.versiones || [])[a.versiones.length - 1];
 const orderedVersions = computed(() => [...(vTarget.value?.versiones || [])].sort((a, b) => b.numero - a.numero));
@@ -216,15 +212,14 @@ function openEdit(a) {
   form.value = {
     nombre: a.nombre, codigo: a.codigo || '', categoria: a.categoria || '',
     cliente: a.cliente?._id || a.cliente || null, producto: a.producto?._id || a.producto || null,
-    descripcion: a.descripcion || '', configuracionImpresion: a.configuracionImpresion || '',
-    pesoImpresion: a.pesoImpresion, tiempoImpresion: a.tiempoImpresion, fotos: [...(a.fotos || [])]
+    descripcion: a.descripcion || '', fotos: [...(a.fotos || [])]
   };
   dialog.value = true;
 }
 
 async function onFotoPick(file) {
   if (!file) return;
-  const url = await img.uploadImage(file, 'archivos');
+  const url = await uploadImage(file, 'archivos');
   if (url) form.value.fotos.push(url);
 }
 
@@ -233,9 +228,6 @@ async function onSubmit() {
   const payload = { ...form.value };
   if (!payload.cliente) delete payload.cliente;
   if (!payload.producto) delete payload.producto;
-  // Joi number() rechaza null: quitar los campos numericos vacios (usan default del schema).
-  if (payload.pesoImpresion == null) delete payload.pesoImpresion;
-  if (payload.tiempoImpresion == null) delete payload.tiempoImpresion;
   const okDone = editing.value ? await update(editId.value, payload) : await create(payload);
   if (okDone) dialog.value = false;
 }
@@ -254,7 +246,7 @@ function openVersions(a) {
 async function onModelPick(kindExt, file) {
   if (!file) return;
   upTarget.value = kindExt;
-  const url = await modelUp.uploadFile(file, { folder: 'modelos', kind: 'model' });
+  const url = await uploadFile(file, { folder: 'modelos', kind: 'model' });
   if (url) newVersion.value[kindExt === 'stl' ? 'archivoStl' : 'archivo3mf'] = url;
   upTarget.value = '';
 }
@@ -291,10 +283,14 @@ function filterClientes(val, update) {
     clienteOptions.value = allClientes.value.filter((c) => c.nombre.toLowerCase().includes(n)).map((c) => ({ label: c.nombre, value: c._id }));
   });
 }
+// El producto se identifica por SKU: siempre lidera la etiqueta y guía la búsqueda.
+const productoLabel = (p) => `${p.sku} — ${p.nombre}`;
 function filterProductos(val, update) {
   update(() => {
     const n = (val || '').toLowerCase();
-    productoOptions.value = allProductos.value.filter((p) => p.nombre.toLowerCase().includes(n)).map((p) => ({ label: p.nombre, value: p._id }));
+    productoOptions.value = allProductos.value
+      .filter((p) => (p.sku || '').toLowerCase().includes(n) || p.nombre.toLowerCase().includes(n))
+      .map((p) => ({ label: productoLabel(p), value: p._id }));
   });
 }
 
@@ -304,7 +300,7 @@ onMounted(async () => {
   allClientes.value = cli.items || [];
   allProductos.value = prod.items || [];
   clienteOptions.value = allClientes.value.map((c) => ({ label: c.nombre, value: c._id }));
-  productoOptions.value = allProductos.value.map((p) => ({ label: p.nombre, value: p._id }));
+  productoOptions.value = allProductos.value.map((p) => ({ label: productoLabel(p), value: p._id }));
 });
 </script>
 
@@ -342,6 +338,5 @@ onMounted(async () => {
 .i3d-tl-date { font-size: 12px; color: var(--text-muted); margin-left: auto; }
 .i3d-tl-changes { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
 .i3d-tl-files { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-.i3d-file-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--tech); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.i3d-imp-k { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
+.i3d-file-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--tech); font-variant-numeric: tabular-nums; }
 </style>

@@ -8,7 +8,7 @@ html, body, #app { height: 100%; }
 html { background: var(--bg-base); }
 body.body--dark, body.body--light, body {
   margin: 0;
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   background: var(--bg-base) !important;
   color: var(--text-primary) !important;
   line-height: 1.5;
@@ -16,9 +16,9 @@ body.body--dark, body.body--light, body {
   transition: background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
 }
 
-/* Cualquier magnitud numérica/técnica va en mono */
-.mono, .i3d-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-h1, .i3d-display { font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.15; }
+/* Números: misma familia, con cifras tabulares para que aliñen en columna */
+.mono, .i3d-mono { font-variant-numeric: tabular-nums; }
+h1, .i3d-display { font-family: var(--font-sans); letter-spacing: -0.01em; line-height: 1.15; }
 
 ::selection { background: color-mix(in srgb, var(--tech) 35%, transparent); }
 
@@ -62,7 +62,7 @@ h1, .i3d-display { font-family: var(--font-display); letter-spacing: -0.01em; li
 
 .q-separator { background: var(--border); }
 
-/* Tipografía Quasar: los titulos de dialogo/seccion son UI (Inter), no "titulos grandes" */
+/* Títulos de diálogo/sección */
 .text-h6 { font-weight: 600; letter-spacing: -0.005em; }
 
 /* Inputs / fields: foco con anillo teal */
@@ -75,12 +75,12 @@ h1, .i3d-display { font-family: var(--font-display); letter-spacing: -0.01em; li
 .q-field__native, .q-field__input, .q-field__prefix, .q-field__suffix { color: var(--text-primary); }
 .q-field__label { color: var(--text-secondary); }
 .q-placeholder::placeholder { color: var(--text-muted); }
-/* Números técnicos en mono */
-input[type="number"].q-field__native { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+/* Números tabulares en inputs numéricos */
+input[type="number"].q-field__native { font-variant-numeric: tabular-nums; }
 
 /* Tablas densas */
 .q-table thead th {
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -94,8 +94,8 @@ input[type="number"].q-field__native { font-family: var(--font-mono); font-varia
 .q-table tbody tr { transition: background var(--dur-micro) var(--ease-standard); }
 .q-table tbody tr:hover { background: color-mix(in srgb, var(--tech) 7%, transparent); }
 .q-table tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
-/* Celdas numéricas alineadas a la derecha en mono */
-.q-table td.text-right { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+/* Celdas numéricas alineadas a la derecha: cifras tabulares */
+.q-table td.text-right { font-variant-numeric: tabular-nums; }
 
 /* Botón primario: naranja con glow en hover (dark) */
 .q-btn.bg-primary, .q-btn--standard.text-primary, .q-btn[data-additive="primary"] { font-weight: 600; }
@@ -104,7 +104,7 @@ input[type="number"].q-field__native { font-family: var(--font-mono); font-varia
   color: var(--accent-contrast) !important;
 }
 .q-btn.bg-primary:hover { box-shadow: var(--glow-accent); }
-.q-btn { border-radius: var(--radius-sm); font-family: var(--font-ui); text-transform: none; }
+.q-btn { border-radius: var(--radius-sm); font-family: var(--font-sans); text-transform: none; }
 
 /* Boton "agregar" junto a un campo dense (bobinas, insumos, items de compra):
    sin esto el q-btn queda mas alto que el q-field --dense de al lado. */
@@ -113,7 +113,7 @@ input[type="number"].q-field__native { font-family: var(--font-mono); font-varia
 .i3d-add-btn-icon.q-btn { width: 40px; min-width: 40px; padding: 0; }
 
 /* Badges base */
-.q-badge { border-radius: var(--radius-pill); font-weight: 600; font-family: var(--font-ui); }
+.q-badge { border-radius: var(--radius-pill); font-weight: 600; font-family: var(--font-sans); }
 
 /* Toggle / switch en teal */
 .q-toggle__inner--active .q-toggle__track { background: var(--tech); opacity: .55; }
@@ -122,8 +122,8 @@ input[type="number"].q-field__native { font-family: var(--font-mono); font-varia
 /* Linear progress */
 .q-linear-progress { color: var(--tech); }
 
-/* Tooltips en mono técnica */
-.q-tooltip { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); font-family: var(--font-ui); font-size: 12px; }
+/* Tooltips */
+.q-tooltip { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-strong); font-family: var(--font-sans); font-size: 12px; }
 
 /* Spinner en acento */
 .q-spinner { color: var(--tech); }
@@ -136,7 +136,7 @@ input[type="number"].q-field__native { font-family: var(--font-mono); font-varia
   padding: 3px 10px 3px 8px;
   border-radius: var(--radius-pill);
   font-size: 12px; font-weight: 600;
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   border: 1px solid var(--border);
   background: var(--bg-elevated);
   color: var(--text-secondary);

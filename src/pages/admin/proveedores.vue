@@ -11,7 +11,7 @@
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre, teléfono o email" @update:model-value="onSearch" clearable>
-        <template #prepend><AppIcon name="search" :size="18" /></template>
+        <template #prepend><AppIcon name="search" :size="18" :bordered="false" /></template>
       </q-input>
     </div>
 
@@ -20,8 +20,8 @@
       empty-label="No hay proveedores aún." @view="openDetail" @update:page="goToPage"
     >
       <template #actions="{ row }">
-        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
-        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
 
@@ -55,8 +55,8 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 
 const columns = [
   { name: 'nombre', label: 'Nombre', field: 'nombre', sortable: true },
-  { name: 'telefono', label: 'Teléfono', field: 'telefono', mono: true },
-  { name: 'email', label: 'Email', field: 'email', hideLabelOnCard: true }
+  { name: 'telefono', label: 'Teléfono', field: 'telefono', mono: true, icon: 'phone' },
+  { name: 'email', label: 'Email', field: 'email', icon: 'mail' }
 ];
 
 const fields = [

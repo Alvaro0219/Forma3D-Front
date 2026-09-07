@@ -37,9 +37,9 @@
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
       <ItemsTable class="q-mb-md" :rows="current.items || []" :columns="itemColumns" />
       <div v-if="auth.puedeVerCostos" class="i3d-venta-cost">
-        <div>Costo real <b class="mono">{{ money(current.costoReal) }}</b></div>
-        <div>Ganancia <b class="mono text-positive">{{ money(current.ganancia) }}</b></div>
-        <div>Margen <b class="mono text-positive">{{ current.margen }}%</b></div>
+        <div class="i3d-kv"><span class="i3d-k">Costo real</span><span class="i3d-v mono">{{ money(current.costoReal) }}</span></div>
+        <div class="i3d-kv"><span class="i3d-k">Ganancia</span><span class="i3d-v mono text-positive">{{ money(current.ganancia) }}</span></div>
+        <div class="i3d-kv"><span class="i3d-k">Margen</span><span class="i3d-v mono text-positive">{{ pct(current.margen) }}</span></div>
         <span class="i3d-auto-tag"><AppIcon name="auto_awesome" :size="12" :bordered="false" /> calculado por el sistema</span>
       </div>
     </RecordDetailDialog>
@@ -93,12 +93,13 @@ import AppIcon from '../../components/AppIcon.vue';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { fetchVentas, createVenta, anularVenta, fetchProductos, fetchClientes } from '../../services/api.js';
-import { formatMoney, formatDateTime } from '../../utils/format.js';
+import { formatMoney, formatDateTime, formatPercent } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
 
 const $q = useQuasar();
 const auth = useAuthStore();
 const money = (n) => formatMoney(n);
+const pct = (n) => formatPercent(n);
 
 const itemColumns = [
   { name: 'nombre', label: 'Producto' },
@@ -122,11 +123,11 @@ const { items, pagination, loading, saving, reload, goToPage, create } = useCrud
 const columns = computed(() => {
   const base = [
     { name: 'numero', label: 'N°', field: 'numero', mono: true, format: (v) => `#${v}` },
-    { name: 'cliente', label: 'Cliente', field: 'cliente' },
-    { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true }
+    { name: 'cliente', label: 'Cliente', field: 'cliente', icon: 'people' },
+    { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true, icon: 'price' }
   ];
-  if (auth.puedeVerCostos) base.push({ name: 'ganancia', label: 'Ganancia', field: 'ganancia', align: 'right' });
-  base.push({ name: 'estado', label: 'Estado', field: 'estado', align: 'center' });
+  if (auth.puedeVerCostos) base.push({ name: 'ganancia', label: 'Ganancia', field: 'ganancia', align: 'right', icon: 'trending_up' });
+  base.push({ name: 'estado', label: 'Estado', field: 'estado', align: 'center', hideLabelOnCard: true });
   return base;
 });
 
@@ -201,5 +202,8 @@ onMounted(async () => {
 .i3d-order-card { width: 760px; max-width: 94vw; }
 .i3d-order-body { max-height: 70vh; overflow-y: auto; }
 .i3d-order-total { font-weight: 700; font-size: 16px; color: var(--text-primary); }
-.i3d-venta-cost { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 12px; background: var(--bg-sunken); border-radius: var(--radius-sm); }
+.i3d-venta-cost {
+  display: flex; flex-wrap: wrap; gap: var(--sp-5) var(--sp-5); align-items: center;
+  padding: var(--sp-4); background: var(--bg-sunken); border-radius: var(--radius-sm);
+}
 </style>

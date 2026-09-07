@@ -3,7 +3,7 @@
     <div class="text-subtitle2 q-mb-sm">Ítems</div>
 
     <div class="i3d-item-add row q-col-gutter-sm q-mb-sm items-end">
-      <div class="col-12 col-md-5">
+      <div class="col-12 col-md-6">
         <q-select
           v-model="picked" :options="prodOptions" outlined dense clearable use-input
           label="Agregar producto" emit-value map-options @filter="filterProds"
@@ -12,10 +12,12 @@
       <div class="col-6 col-md-2">
         <q-input v-model.number="pickQty" type="number" outlined dense label="Cant." min="1" />
       </div>
-      <div class="col-6 col-md-3">
-        <q-btn color="primary" outline dense class="full-width i3d-add-btn" @click="addPicked"><AppIcon name="add" :size="16" class="q-mr-xs" />Agregar</q-btn>
+      <div class="col-3 col-md-1">
+        <q-btn color="primary" outline dense class="i3d-add-btn i3d-add-btn-icon" @click="addPicked">
+          <AppIcon name="add" :size="16" /><q-tooltip>Agregar</q-tooltip>
+        </q-btn>
       </div>
-      <div class="col-12 col-md-2">
+      <div class="col-9 col-md-3">
         <q-btn flat dense color="grey-7" class="full-width i3d-add-btn" @click="addManual"><AppIcon name="edit_note" :size="16" class="q-mr-xs" />Manual</q-btn>
       </div>
     </div>

@@ -11,7 +11,7 @@
     <div class="i3d-toolbar">
       <q-input v-model="search" class="i3d-grow" outlined dense debounce="350"
                label="Buscar por nombre o SKU" @update:model-value="onFilter" clearable>
-        <template #prepend><AppIcon name="search" :size="18" /></template>
+        <template #prepend><AppIcon name="search" :size="18" :bordered="false" /></template>
       </q-input>
       <q-select v-model="fCategoria" :options="categorias" outlined dense clearable
                 label="Filtrar por categoría" style="width:190px" @update:model-value="onFilter" />
@@ -31,8 +31,8 @@
         <AppIcon :name="value ? 'check_circle' : 'cancel'" :color="value ? 'success' : 'muted'" :size="18" />
       </template>
       <template #actions="{ row }">
-        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
-        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
 
@@ -129,12 +129,12 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 
 const columns = [
   { name: 'nombre', label: 'Nombre', field: 'nombre', sortable: true },
-  { name: 'sku', label: 'SKU', field: 'sku', mono: true },
-  { name: 'categoria', label: 'Categoría', field: 'categoria' },
-  { name: 'precioVenta', label: 'Precio', field: 'precioVenta', align: 'right', mono: true, sortable: true },
-  { name: 'stock', label: 'Stock', field: 'stock', align: 'right', mono: true, sortable: true },
-  { name: 'insumos', label: 'Insumos', field: 'insumos', align: 'center' },
-  { name: 'visibleEnTienda', label: 'Tienda', field: 'visibleEnTienda', align: 'center' }
+  { name: 'sku', label: 'SKU', field: 'sku', mono: true, icon: 'tag' },
+  { name: 'categoria', label: 'Categoría', field: 'categoria', icon: 'category' },
+  { name: 'precioVenta', label: 'Precio', field: 'precioVenta', align: 'right', mono: true, sortable: true, icon: 'price' },
+  { name: 'stock', label: 'Stock', field: 'stock', align: 'right', mono: true, sortable: true, icon: 'inventory_2' },
+  { name: 'insumos', label: 'Insumos', field: 'insumos', align: 'center', icon: 'layers' },
+  { name: 'visibleEnTienda', label: 'Tienda', field: 'visibleEnTienda', align: 'center', icon: 'storefront' }
 ];
 
 // La categoria es una lista precargada desde Configuracion y define el prefijo del SKU.

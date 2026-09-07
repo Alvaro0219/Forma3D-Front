@@ -64,7 +64,7 @@
             <div class="i3d-result-row i3d-highlight"><span>Precio sugerido</span><b class="mono">{{ money(resultado.precioSugerido) }}</b></div>
             <div v-if="input.cantidadPiezas > 1" class="i3d-result-row i3d-highlight"><span>Precio por pieza ({{ input.cantidadPiezas }})</span><b class="mono">{{ money(precioPorPieza) }}</b></div>
             <div class="i3d-result-row text-positive"><span>Ganancia</span><b class="mono">{{ money(resultado.ganancia) }}</b></div>
-            <div class="i3d-result-row text-positive"><span>Margen</span><b class="mono">{{ resultado.margen }}%</b></div>
+            <div class="i3d-result-row text-positive"><span>Margen</span><b class="mono">{{ pct(resultado.margen) }}</b></div>
           </div>
           <div v-else class="text-grey">Completá los datos y presioná Calcular.</div>
         </div>
@@ -78,11 +78,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { calcularCosto, fetchConfig } from '../../services/api.js';
 import AppIcon from '../../components/AppIcon.vue';
-import { formatMoney } from '../../utils/format.js';
+import { formatMoney, formatPercent } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
 
 const $q = useQuasar();
 const money = (n) => formatMoney(n);
+const pct = (n) => formatPercent(n);
 
 const input = ref({
   precioRollo: 25000, pesoRollo: 1000, gramosUtilizados: 0, tiempoImpresion: 0,

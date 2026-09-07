@@ -4,7 +4,8 @@
     <aside class="i3d-sidebar">
       <div class="i3d-brand">
         <span class="i3d-brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L21 7 V17 L12 22 L3 17 V7 Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12 L21 7 M12 12 V22 M12 12 L3 7" stroke="var(--tech)" stroke-width="1.2"/></svg>
+          <img v-if="logoUrl" :src="logoUrl" alt="" class="i3d-brand-logo" />
+          <svg v-else viewBox="0 0 24 24" fill="none"><path d="M12 2 L21 7 V17 L12 22 L3 17 V7 Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12 L21 7 M12 12 V22 M12 12 L3 7" stroke="var(--tech)" stroke-width="1.2"/></svg>
         </span>
         <span class="i3d-brand-name">{{ nombreNegocio }}</span>
       </div>
@@ -44,15 +45,15 @@
 
         <q-space />
 
-        <q-btn flat round dense @click="theme.toggle()">
-          <AppIcon :name="theme.isDark ? 'light_mode' : 'dark_mode'" :size="18" />
+        <q-btn flat round dense class="i3d-theme-btn" @click="theme.toggle()">
+          <AppIcon :name="theme.isDark ? 'light_mode' : 'dark_mode'" :size="20" />
           <q-tooltip>{{ theme.isDark ? 'Modo claro' : 'Modo oscuro' }}</q-tooltip>
         </q-btn>
 
         <q-btn-dropdown flat no-caps class="i3d-user-btn" dropdown-icon="none">
           <template #label>
             <div class="i3d-user-chip">
-              <AppIcon name="account_circle" :size="22" />
+              <AppIcon name="account_circle" :size="20" />
               <div class="i3d-user-meta">
                 <span class="i3d-user-name">{{ auth.user?.name }}</span>
                 <span class="i3d-user-role mono">{{ auth.user?.role }}</span>
@@ -81,7 +82,13 @@
     <!-- Drawer mobile -->
     <q-dialog v-model="mobileMenu" position="left" full-height>
       <q-card class="i3d-drawer">
-        <div class="i3d-brand"><span class="i3d-brand-name">{{ nombreNegocio }}</span></div>
+        <div class="i3d-brand">
+          <span class="i3d-brand-mark" aria-hidden="true">
+            <img v-if="logoUrl" :src="logoUrl" alt="" class="i3d-brand-logo" />
+            <svg v-else viewBox="0 0 24 24" fill="none"><path d="M12 2 L21 7 V17 L12 22 L3 17 V7 Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12 L21 7 M12 12 V22 M12 12 L3 7" stroke="var(--tech)" stroke-width="1.2"/></svg>
+          </span>
+          <span class="i3d-brand-name">{{ nombreNegocio }}</span>
+        </div>
         <q-list>
           <template v-for="group in navGroups" :key="group.title">
             <q-item-label header v-if="group.items.length">{{ group.title }}</q-item-label>
@@ -115,6 +122,7 @@ const theme = useThemeStore();
 const mobileMenu = ref(false);
 const collapsed = ref(loadCollapsed());
 const nombreNegocio = ref('Gestión 3D');
+const logoUrl = ref('');
 
 function loadCollapsed() {
   try { return localStorage.getItem('i3d_sidebar_collapsed') === '1'; } catch { return false; }
@@ -163,6 +171,7 @@ onMounted(async () => {
   try {
     const cfg = await fetchConfig();
     if (cfg?.nombreNegocio) nombreNegocio.value = cfg.nombreNegocio;
+    if (cfg?.logo) logoUrl.value = cfg.logo;
   } catch { /* default */ }
 });
 </script>
@@ -188,6 +197,7 @@ onMounted(async () => {
 }
 .i3d-brand-mark { width: 26px; height: 26px; flex-shrink: 0; }
 .i3d-brand-mark svg { width: 100%; height: 100%; }
+.i3d-brand-logo { width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-sm); }
 .i3d-brand-name {
   font-weight: 700; font-size: 15px;
   color: var(--text-primary); white-space: nowrap; overflow: hidden;

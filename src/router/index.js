@@ -10,7 +10,7 @@ const Login = () => import('../pages/login.vue');
 
 // Tienda publica
 const TiendaCatalogo = () => import('../pages/tienda/index.vue');
-const TiendaCarrito = () => import('../pages/tienda/carrito.vue');
+const TiendaProducto = () => import('../pages/tienda/producto.vue');
 
 // Admin
 const Dashboard = () => import('../pages/admin/dashboard.vue');
@@ -37,7 +37,7 @@ const routes = [
     meta: { public: true },
     children: [
       { path: '', component: TiendaCatalogo },
-      { path: 'carrito', component: TiendaCarrito }
+      { path: 'producto/:id', component: TiendaProducto }
     ]
   },
 

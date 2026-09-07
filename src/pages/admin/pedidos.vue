@@ -18,18 +18,26 @@
       empty-label="No hay pedidos aún." @view="openDetail" @update:page="goToPage"
     >
       <template #cell-cliente="{ row }">{{ row.cliente?.nombre || row.clienteNombre || '—' }}</template>
-      <template #cell-total="{ value }">{{ money(value) }}</template>
-      <template #cell-estado="{ row }">
-        <q-select :model-value="row.estado" :options="estados" dense borderless emit-value map-options
-                  @update:model-value="v => changeEstado(row, v)" style="min-width:130px" @click.stop />
-      </template>
+      <template #cell-total="{ value }"><span class="i3d-highlight-value">{{ money(value) }}</span></template>
+      <template #cell-estado="{ value }"><StatusBadge :label="value" :status="value" /></template>
       <template #actions="{ row }">
         <q-btn flat dense round color="positive" size="sm" :disable="!!row.venta" @click="convertir(row)">
           <AppIcon name="point_of_sale" :size="16" />
           <q-tooltip>{{ row.venta ? 'Ya facturado' : 'Registrar venta' }}</q-tooltip>
         </q-btn>
-        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" /></q-btn>
-        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" /></q-btn>
+        <q-btn flat dense round size="sm">
+          <AppIcon name="swap_horiz" :size="16" />
+          <q-menu>
+            <q-list dense>
+              <q-item v-for="e in estados" :key="e.value" clickable v-close-popup @click="changeEstado(row, e.value)">
+                <q-item-section>{{ e.label }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+          <q-tooltip>Cambiar estado</q-tooltip>
+        </q-btn>
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
 
@@ -42,7 +50,7 @@
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
       <ItemsTable class="q-mb-md" :rows="current.items || []" :columns="itemColumns" />
       <div v-if="current.venta" class="text-positive"><AppIcon name="check_circle" :size="16" color="success" /> Venta registrada</div>
-      <div v-if="current.notas" class="q-mt-sm"><div class="i3d-lc-k">Notas</div>{{ current.notas }}</div>
+      <div v-if="current.notas" class="q-mt-sm"><div class="i3d-k">Notas</div>{{ current.notas }}</div>
     </RecordDetailDialog>
 
     <!-- Crear / editar pedido -->
@@ -111,9 +119,9 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 
 const columns = [
   { name: 'numero', label: 'N°', field: 'numero', mono: true, format: (v) => `#${v}` },
-  { name: 'cliente', label: 'Cliente', field: 'cliente' },
-  { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true },
-  { name: 'estado', label: 'Estado', field: 'estado' }
+  { name: 'cliente', label: 'Cliente', field: 'cliente', icon: 'people' },
+  { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true, icon: 'price' },
+  { name: 'estado', label: 'Estado', field: 'estado', titleSide: true }
 ];
 
 const fEstado = ref(null);

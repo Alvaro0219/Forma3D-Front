@@ -15,13 +15,17 @@ function loadCart() {
 }
 
 export const useCarritoStore = defineStore('carrito', {
-  state: () => ({ items: loadCart() }),
+  // drawerOpen es solo UI (no se persiste): el panel del carrito se puede abrir
+  // desde cualquier pagina de la tienda sin navegar a otra ruta.
+  state: () => ({ items: loadCart(), drawerOpen: false }),
   getters: {
     count: (s) => s.items.reduce((acc, i) => acc + i.cantidad, 0),
     total: (s) => s.items.reduce((acc, i) => acc + i.precio * i.cantidad, 0),
     isEmpty: (s) => s.items.length === 0
   },
   actions: {
+    openDrawer() { this.drawerOpen = true; },
+    closeDrawer() { this.drawerOpen = false; },
     persist() {
       localStorage.setItem('i3d_cart', JSON.stringify(this.items));
     },
