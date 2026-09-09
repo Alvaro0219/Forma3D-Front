@@ -27,6 +27,7 @@ export function useImageUpload() {
       const { data } = await api.post('/uploads/presign', {
         fileName: file.name,
         contentType: file.type,
+        size: file.size, // se firma en la URL: R2 rechaza cualquier otro tamaño
         folder
       });
       if (!data.success) throw new Error(data.error?.message || 'No se pudo iniciar la subida');

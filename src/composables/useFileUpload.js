@@ -36,6 +36,7 @@ export function useFileUpload() {
       const { data } = await api.post('/uploads/presign', {
         fileName: file.name,
         contentType: file.type || 'application/octet-stream',
+        size: file.size, // se firma en la URL: R2 rechaza cualquier otro tamaño
         kind,
         folder
       });

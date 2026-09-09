@@ -90,6 +90,7 @@ export async function refreshApi(refreshToken) {
 export const fetchUsers = (params) => getList('/auth/users', params);
 export const createUser = (p) => postOne('/auth/users', p);
 export const updateUser = (id, p) => putOne(`/auth/users/${id}`, p);
+export const cambiarPassword = (actual, nueva) => putOne('/auth/password', { actual, nueva });
 
 // ─── Dashboard ──────────────────────────────────────────────
 export const fetchResumen = () => getOne('/dashboard/resumen');

@@ -62,6 +62,10 @@
             <AppIcon name="expand_more" :size="16" :bordered="false" class="i3d-user-caret" />
           </template>
           <q-list>
+            <q-item clickable v-close-popup @click="pwdDialog = true">
+              <q-item-section avatar><AppIcon name="lock" :size="18" /></q-item-section>
+              <q-item-section>Cambiar contraseña</q-item-section>
+            </q-item>
             <q-item clickable v-close-popup @click="logout">
               <q-item-section avatar><AppIcon name="logout" :size="18" /></q-item-section>
               <q-item-section>Cerrar sesión</q-item-section>
@@ -103,6 +107,8 @@
         </q-list>
       </q-card>
     </q-dialog>
+
+    <ChangePasswordDialog v-model="pwdDialog" />
   </div>
 </template>
 
@@ -113,6 +119,9 @@ import { useAuthStore } from '../stores/auth.js';
 import { useThemeStore } from '../stores/theme.js';
 import { fetchConfig } from '../services/api.js';
 import AppIcon from '../components/AppIcon.vue';
+import ChangePasswordDialog from '../components/ChangePasswordDialog.vue';
+
+const pwdDialog = ref(false);
 
 const route = useRoute();
 const router = useRouter();
