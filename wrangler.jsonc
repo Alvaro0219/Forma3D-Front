@@ -1,0 +1,11 @@
+{
+  // Nombre del Worker: define la URL de fallback https://forma3d-front.<cuenta>.workers.dev
+  "name": "forma3d-front",
+  "compatibility_date": "2026-09-10",
+  "assets": {
+    // Carpeta que genera "npm run build". Reemplaza al archivo _redirects de Pages
+    // clasico: acá se define la regla de SPA routing para que recargar en una ruta interna (ej. /tienda/producto/123) no de 404.
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
