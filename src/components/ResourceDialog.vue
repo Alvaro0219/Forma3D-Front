@@ -56,7 +56,7 @@
               :hint="f.hint || 'Elegí de la paleta o escribí un código hex'"
             >
               <template #prepend>
-                <ColorDot :color="form[f.name]" :size="16" />
+                <ColorDot :color="form[f.name]" :size="18" />
               </template>
               <template #append>
                 <span class="i3d-color-trigger cursor-pointer">

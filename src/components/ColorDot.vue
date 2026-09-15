@@ -7,7 +7,7 @@ import { computed } from 'vue';
 
 const props = defineProps({
   color: { type: String, default: '' },
-  size: { type: [Number, String], default: 14 }
+  size: { type: [Number, String], default: 16 }
 });
 
 const bg = computed(() => (/^#[0-9a-fA-F]{3,6}$/.test(props.color || '') ? props.color : '#8b8b8b'));

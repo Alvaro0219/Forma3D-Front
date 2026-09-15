@@ -48,7 +48,11 @@
     <ResourceDialog
       v-model="dialog" :title="editing ? 'Editar bobina' : 'Nueva bobina'"
       :fields="fields" :initial="current" :saving="saving" @submit="onSubmit"
-    />
+    >
+      <template #extra="{ form }">
+        <BobinaIdPreview :marca="form.marca" :existing="editing ? current.identificadorBobina : ''" />
+      </template>
+    </ResourceDialog>
 
     <!-- Vista de la bobina -->
     <RecordDetailDialog
@@ -107,6 +111,7 @@ import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import ColorDot from '../../components/ColorDot.vue';
+import BobinaIdPreview from '../../components/BobinaIdPreview.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
   fetchFilamentos, createFilamento, updateFilamento, deleteFilamento, consumirFilamento, fetchFilamentoMovimientos
@@ -126,6 +131,8 @@ const { items, pagination, loading, saving, reload, goToPage, create, update, re
 });
 
 const tipos = ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'NYLON', 'OTRO'];
+// Catalogo fijo de marcas: define el prefijo del ID de bobina autogenerado (ver bobinaService en el backend).
+const marcas = ['PRINTALOT', 'GRILON', 'GST3D', 'HELBOT', '3N3', 'ELEGI00', 'BAMBULAB', 'FILAR'];
 
 const columns = [
   { name: 'identificadorBobina', label: 'ID Bobina', field: 'identificadorBobina', mono: true },
@@ -137,8 +144,8 @@ const columns = [
 ];
 
 const fields = [
-  { name: 'identificadorBobina', label: 'ID Bobina', cols: 6, required: true },
-  { name: 'marca', label: 'Marca', cols: 6 },
+  { name: 'marca', label: 'Marca', type: 'select', cols: 6, required: true,
+    options: marcas.map((m) => ({ label: m, value: m })), hint: 'Define el ID de la bobina' },
   { name: 'tipo', label: 'Tipo', type: 'select', cols: 6, default: 'PLA', options: tipos.map((t) => ({ label: t, value: t })) },
   { name: 'color', label: 'Color', type: 'color', cols: 6 },
   { name: 'pesoOriginal', label: 'Peso original (g)', type: 'number', cols: 6, default: 1000, required: true },

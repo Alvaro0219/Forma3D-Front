@@ -25,7 +25,7 @@
 
     <!-- Vista de la compra -->
     <RecordDetailDialog
-      v-model="detailDialog" :title="`Compra ${current.comprobante || '#' + (current._id || '').slice(-5)}`"
+      v-model="detailDialog" :title="`Compra #${(current._id || '').slice(-5)}`"
       :subtitle="current.proveedor?.nombre" :fields="detailFields"
     >
       <div class="text-subtitle2 q-mb-xs">Ítems</div>
@@ -47,8 +47,7 @@
               <q-select v-model="form.proveedor" :options="provOptions" outlined dense clearable label="Proveedor" emit-value map-options />
             </div>
             <div class="col-6 col-md-3"><q-input v-model="form.fecha" outlined dense type="date" label="Fecha" stack-label /></div>
-            <div class="col-6 col-md-3"><q-input v-model="form.comprobante" outlined dense label="Comprobante" /></div>
-            <div class="col-12 col-md-6"><q-select v-model="form.formaPago" :options="formasPago" outlined dense label="Forma de pago" emit-value map-options /></div>
+            <div class="col-6 col-md-3"><q-select v-model="form.formaPago" :options="formasPago" outlined dense label="Forma de pago" emit-value map-options /></div>
           </div>
 
           <div class="text-subtitle2 q-mb-sm">Ítems</div>
@@ -59,11 +58,38 @@
             </div>
             <div class="col-6 col-md-4">
               <q-select v-model="draft.articuloId" :options="articuloOptions" outlined dense clearable use-input
-                        label="Artículo existente (opcional)" emit-value map-options @filter="filterArticulos" @update:model-value="onArticuloPick" />
+                        label="Artículo existente (opcional)" emit-value map-options @filter="filterArticulos" @update:model-value="onArticuloPick">
+                <template #option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <div class="i3d-articulo-opt">
+                        <ColorDot v-if="scope.opt.color" :color="scope.opt.color" />
+                        <span>{{ scope.opt.label }}</span>
+                      </div>
+                    </q-item-section>
+                  </q-item>
+                </template>
+                <template #selected>
+                  <div v-if="selectedArticuloOption" class="i3d-articulo-opt">
+                    <ColorDot v-if="selectedArticuloOption.color" :color="selectedArticuloOption.color" />
+                    <span>{{ selectedArticuloOption.label }}</span>
+                  </div>
+                </template>
+              </q-select>
             </div>
             <div class="col-12 col-md-5"><q-input v-model="draft.descripcion" outlined dense label="Descripción" /></div>
-            <div class="col-4 col-md-3"><q-input v-model.number="draft.cantidad" type="number" outlined dense label="Cantidad" /></div>
-            <div class="col-4 col-md-3"><q-input v-model.number="draft.precioUnitario" type="number" outlined dense label="Precio unit." prefix="$" /></div>
+            <div class="col-4 col-md-3">
+              <q-input
+                v-model.number="draft.cantidad" type="number" outlined dense
+                :label="draft.articuloTipo === 'Filamento' ? 'Bobinas (1kg c/u)' : 'Cantidad'"
+              />
+            </div>
+            <div class="col-4 col-md-3">
+              <q-input
+                v-model.number="draft.precioUnitario" type="number" outlined dense prefix="$"
+                :label="draft.articuloTipo === 'Filamento' ? 'Precio x bobina' : 'Precio unit.'"
+              />
+            </div>
             <div class="col-4 col-md-3"><q-btn color="primary" outline dense class="full-width i3d-add-btn" @click="addItem"><AppIcon name="add" :size="16" class="q-mr-xs" />Agregar</q-btn></div>
           </div>
 
@@ -92,6 +118,7 @@ import ResourceList from '../../components/ResourceList.vue';
 import RecordDetailDialog from '../../components/RecordDetailDialog.vue';
 import ItemsTable from '../../components/ItemsTable.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import ColorDot from '../../components/ColorDot.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import { fetchCompras, createCompra, fetchProveedores, fetchInsumos, fetchFilamentos } from '../../services/api.js';
 import { formatMoney, formatDate } from '../../utils/format.js';
@@ -129,7 +156,6 @@ const { items, pagination, loading, saving, reload, goToPage, create } = useCrud
 const columns = [
   { name: 'fecha', label: 'Fecha', field: 'fecha', mono: true, icon: 'calendar' },
   { name: 'proveedor', label: 'Proveedor', field: 'proveedor', icon: 'local_shipping' },
-  { name: 'comprobante', label: 'Comprobante', field: 'comprobante', icon: 'description' },
   { name: 'items', label: 'Ítems', field: 'items', icon: 'layers' },
   { name: 'total', label: 'Total', field: 'total', align: 'right', mono: true, icon: 'price' }
 ];
@@ -137,7 +163,7 @@ const columns = [
 const fDesde = ref('');
 const fHasta = ref('');
 const dialog = ref(false);
-const form = ref({ proveedor: null, fecha: '', comprobante: '', formaPago: 'efectivo', items: [] });
+const form = ref({ proveedor: null, fecha: '', formaPago: 'efectivo', items: [] });
 const draft = ref({ articuloTipo: 'Insumo', articuloId: null, descripcion: '', cantidad: 1, precioUnitario: 0 });
 const provOptions = ref([]);
 const insumos = ref([]);
@@ -151,7 +177,6 @@ const detailFields = computed(() => {
   return [
     { label: 'Proveedor', value: c.proveedor?.nombre, cols: 6 },
     { label: 'Fecha', value: date(c.fecha), mono: true, cols: 6 },
-    { label: 'Comprobante', value: c.comprobante, cols: 6 },
     { label: 'Forma de pago', value: c.formaPago, cols: 6 },
     { label: 'Total', value: money(c.total), mono: true, cols: 6 }
   ];
@@ -163,7 +188,7 @@ function onFilter() { reload({ desde: fDesde.value, hasta: fHasta.value }); }
 function openDetail(row) { current.value = { ...row }; detailDialog.value = true; }
 
 function openCreate() {
-  form.value = { proveedor: null, fecha: new Date().toISOString().slice(0, 10), comprobante: '', formaPago: 'efectivo', items: [] };
+  form.value = { proveedor: null, fecha: new Date().toISOString().slice(0, 10), formaPago: 'efectivo', items: [] };
   draft.value = { articuloTipo: 'Insumo', articuloId: null, descripcion: '', cantidad: 1, precioUnitario: 0 };
   refreshArticuloOptions();
   dialog.value = true;
@@ -171,15 +196,23 @@ function openCreate() {
 
 function currentList() { return draft.value.articuloTipo === 'Filamento' ? filamentos.value : insumos.value; }
 function optLabel(a) { return draft.value.articuloTipo === 'Filamento' ? `${a.identificadorBobina} — ${a.marca || ''} ${a.tipo}` : `${a.nombre}`; }
-function refreshArticuloOptions() { articuloOptions.value = currentList().map((a) => ({ label: optLabel(a), value: a._id })); }
+function optColor(a) { return draft.value.articuloTipo === 'Filamento' ? a.color : undefined; }
+function toOption(a) { return { label: optLabel(a), value: a._id, color: optColor(a) }; }
+function refreshArticuloOptions() { articuloOptions.value = currentList().map(toOption); }
 function onTipoChange() { draft.value.articuloId = null; refreshArticuloOptions(); }
 function filterArticulos(val, update) {
   update(() => {
     const n = (val || '').toLowerCase();
-    articuloOptions.value = currentList().filter((a) => optLabel(a).toLowerCase().includes(n)).map((a) => ({ label: optLabel(a), value: a._id }));
+    articuloOptions.value = currentList().filter((a) => optLabel(a).toLowerCase().includes(n)).map(toOption);
   });
 }
-function onArticuloPick(id) { if (!id) return; const a = currentList().find((x) => x._id === id); if (a) draft.value.descripcion = optLabel(a); }
+const selectedArticuloOption = computed(() => articuloOptions.value.find((o) => o.value === draft.value.articuloId) || null);
+function onArticuloPick(id) {
+  if (!id) return;
+  const a = currentList().find((x) => x._id === id);
+  if (!a) return;
+  draft.value.descripcion = optLabel(a);
+}
 
 function addItem() {
   if (!draft.value.descripcion) { $q.notify({ type: 'warning', message: 'Ingresá una descripción' }); return; }
@@ -193,7 +226,6 @@ async function onSubmit() {
   const payload = {
     proveedor: form.value.proveedor || undefined,
     fecha: form.value.fecha || undefined,
-    comprobante: form.value.comprobante || undefined,
     formaPago: form.value.formaPago,
     items: form.value.items.map((i) => ({ articuloTipo: i.articuloTipo, articuloId: i.articuloId || undefined, descripcion: i.descripcion, cantidad: i.cantidad, precioUnitario: i.precioUnitario }))
   };
@@ -214,4 +246,5 @@ onMounted(async () => {
 .i3d-order-card { width: 820px; max-width: 95vw; }
 .i3d-order-body { max-height: 72vh; overflow-y: auto; }
 .i3d-order-total { font-weight: 700; font-size: 16px; color: var(--text-primary); }
+.i3d-articulo-opt { display: flex; align-items: center; gap: 8px; }
 </style>

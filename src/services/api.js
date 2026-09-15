@@ -124,6 +124,7 @@ export const updateFilamento = (id, p) => putOne(`/filamentos/${id}`, p);
 export const deleteFilamento = (id) => delOne(`/filamentos/${id}`);
 export const consumirFilamento = (id, p) => postOne(`/filamentos/${id}/consumir`, p);
 export const fetchFilamentoMovimientos = (id) => getOne(`/filamentos/${id}/movimientos`);
+export const fetchNextBobinaId = (marca) => getOne(`/filamentos/next-bobina-id?marca=${encodeURIComponent(marca)}`);
 
 // ─── Insumos ────────────────────────────────────────────────
 export const fetchInsumos = (params) => getList('/insumos', params);
