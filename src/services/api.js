@@ -193,6 +193,7 @@ export const createArchivo = (p) => postOne('/archivos', p);
 export const updateArchivo = (id, p) => putOne(`/archivos/${id}`, p);
 export const deleteArchivo = (id) => delOne(`/archivos/${id}`);
 export const addArchivoVersion = (id, p) => postOne(`/archivos/${id}/versiones`, p);
+export const fetchArchivoDescarga = (id, tipo, numero) => getOne(`/archivos/${id}/descarga?tipo=${tipo}${numero ? `&version=${numero}` : ''}`);
 export const setArchivoVersionActual = async (id, numero) => {
   const { data, status } = await api.patch(`/archivos/${id}/versiones/${numero}/actual`);
   return unwrap(data, 'Error al marcar versión actual', status);

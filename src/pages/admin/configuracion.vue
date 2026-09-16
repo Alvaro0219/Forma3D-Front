@@ -43,6 +43,20 @@
             </div>
           </div>
 
+          <div class="i3d-section-card q-mb-md">
+            <div class="text-subtitle1 q-mb-md">Catálogos</div>
+            <q-select
+              v-model="cfg.categorias" outlined dense class="q-mb-sm"
+              label="Categorías de productos" use-input use-chips multiple hide-dropdown-icon
+              new-value-mode="add-unique" hint="Define el prefijo del SKU. Escribí y presioná Enter para agregar"
+            />
+            <q-select
+              v-model="cfg.unidades" outlined dense
+              label="Unidades de insumos" use-input use-chips multiple hide-dropdown-icon
+              new-value-mode="add-unique" hint="Escribí y presioná Enter para agregar"
+            />
+          </div>
+
           <div class="i3d-section-card">
             <div class="text-subtitle1 q-mb-md">Parámetros de costo</div>
             <div class="row q-col-gutter-sm">

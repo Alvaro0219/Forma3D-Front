@@ -113,8 +113,12 @@
                 </div>
                 <div v-if="v.cambios" class="i3d-tl-changes">{{ v.cambios }}</div>
                 <div class="i3d-tl-files">
-                  <a v-if="v.archivoStl" :href="v.archivoStl" target="_blank" class="i3d-file-chip"><AppIcon name="description" :size="13" :bordered="false" /> STL</a>
-                  <a v-if="v.archivo3mf" :href="v.archivo3mf" target="_blank" class="i3d-file-chip"><AppIcon name="description" :size="13" :bordered="false" /> 3MF</a>
+                  <button v-if="v.archivoStl" type="button" class="i3d-file-chip" :disabled="descargando" @click="descargar(v, 'stl')">
+                    <AppIcon name="description" :size="13" :bordered="false" /> STL
+                  </button>
+                  <button v-if="v.archivo3mf" type="button" class="i3d-file-chip" :disabled="descargando" @click="descargar(v, '3mf')">
+                    <AppIcon name="description" :size="13" :bordered="false" /> 3MF
+                  </button>
                   <q-btn v-if="!v.esActual" flat dense size="sm" no-caps label="Marcar actual" @click="setActual(v.numero)" />
                 </div>
               </div>
@@ -166,7 +170,7 @@ import { useImageUpload } from '../../composables/useImageUpload.js';
 import { useFileUpload } from '../../composables/useFileUpload.js';
 import {
   fetchArchivos, createArchivo, updateArchivo, deleteArchivo, addArchivoVersion, setArchivoVersionActual,
-  fetchClientes, fetchProductos
+  fetchArchivoDescarga, fetchClientes, fetchProductos
 } from '../../services/api.js';
 import { formatDate } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
@@ -268,6 +272,22 @@ async function addVersion() {
     saving.value = false;
   }
 }
+// Pide una URL de descarga firmada (con el nombre del archivo prolijo, ver backend)
+// y recien ahi dispara la descarga: un <a href> directo a la URL publica no puede
+// llevar el token de autenticacion, por eso el pedido pasa primero por la API.
+const descargando = ref(false);
+async function descargar(version, tipo) {
+  descargando.value = true;
+  try {
+    const { url } = await fetchArchivoDescarga(vTarget.value._id, tipo, version.numero);
+    window.open(url, '_blank');
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e.message || 'No se pudo descargar el archivo' });
+  } finally {
+    descargando.value = false;
+  }
+}
+
 async function setActual(numero) {
   try {
     vTarget.value = await setArchivoVersionActual(vTarget.value._id, numero);
@@ -338,5 +358,11 @@ onMounted(async () => {
 .i3d-tl-date { font-size: 12px; color: var(--text-muted); margin-left: auto; }
 .i3d-tl-changes { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
 .i3d-tl-files { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-.i3d-file-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--tech); font-variant-numeric: tabular-nums; }
+.i3d-file-chip {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 10px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--tech);
+  font-variant-numeric: tabular-nums; background: transparent; font-family: inherit; cursor: pointer;
+}
+.i3d-file-chip:hover { border-color: var(--tech); }
+.i3d-file-chip:disabled { opacity: .6; cursor: default; }
 </style>
