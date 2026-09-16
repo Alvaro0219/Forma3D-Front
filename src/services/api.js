@@ -138,6 +138,7 @@ export const fetchInsumoMovimientos = (id) => getOne(`/insumos/${id}/movimientos
 export const fetchCompras = (params) => getList('/compras', params);
 export const fetchCompra = (id) => getOne(`/compras/${id}`);
 export const createCompra = (p) => postOne('/compras', p);
+export const updateCompra = (id, p) => putOne(`/compras/${id}`, p);
 
 // ─── Pedidos ────────────────────────────────────────────────
 export const fetchPedidos = (params) => getList('/pedidos', params);
@@ -179,6 +180,10 @@ export const deleteImpresion = (id) => delOne(`/impresiones/${id}`);
 export const registrarConsumoImpresion = async (id) => {
   const { data, status } = await api.post(`/impresiones/${id}/consumo`);
   return unwrap(data, 'Error al registrar consumo', status);
+};
+export const duplicarImpresion = async (id) => {
+  const { data, status } = await api.post(`/impresiones/${id}/duplicar`);
+  return unwrap(data, 'Error al duplicar la impresión', status);
 };
 
 // ─── Archivos 3D (modulo secundario) ────────────────────────

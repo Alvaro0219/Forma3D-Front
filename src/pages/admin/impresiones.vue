@@ -62,6 +62,9 @@
           <q-tooltip>Cambiar estado</q-tooltip>
         </q-btn>
         <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+        <q-btn flat dense round size="sm" :loading="duplicando === row._id" @click="duplicar(row)">
+          <AppIcon name="content_copy" :size="16" /><q-tooltip>Duplicar (misma plancha, otra tanda)</q-tooltip>
+        </q-btn>
         <q-btn flat dense round color="negative" size="sm" @click="confirmDelete(row)"><AppIcon name="delete" :size="16" color="danger" /></q-btn>
       </template>
     </ResourceList>
@@ -194,7 +197,7 @@ import ColorDot from '../../components/ColorDot.vue';
 import ItemsTable from '../../components/ItemsTable.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
-  fetchImpresiones, createImpresion, updateImpresion, deleteImpresion, registrarConsumoImpresion,
+  fetchImpresiones, createImpresion, updateImpresion, deleteImpresion, registrarConsumoImpresion, duplicarImpresion,
   fetchProductos, fetchFilamentos, fetchImpresoras
 } from '../../services/api.js';
 import { formatMoney, formatNumber, formatGrams } from '../../utils/format.js';
@@ -363,6 +366,22 @@ async function finalizar(imp) {
     await reload();
   } catch (e) {
     $q.notify({ type: 'negative', message: e.message || 'No se pudo descontar' });
+  }
+}
+
+// Misma plancha impresa varias veces: duplica producto/impresora/bobinas/piezas
+// como un trabajo NUEVO en "pendiente", que pasa por su propio consumo al finalizarla.
+const duplicando = ref(null);
+async function duplicar(imp) {
+  duplicando.value = imp._id;
+  try {
+    const copia = await duplicarImpresion(imp._id);
+    $q.notify({ type: 'positive', message: `Impresión #${copia.numero} creada como pendiente` });
+    await reload();
+  } catch (e) {
+    $q.notify({ type: 'negative', message: e.message || 'No se pudo duplicar' });
+  } finally {
+    duplicando.value = null;
   }
 }
 

@@ -58,9 +58,6 @@
             <div class="i3d-prod-eyebrow" v-if="p.categoria">{{ p.categoria }}</div>
             <div class="i3d-prod-name">{{ p.nombre }}</div>
             <div v-if="p.descripcion" class="i3d-prod-desc">{{ p.descripcion }}</div>
-            <div v-if="p.colores?.length" class="i3d-swatch-row">
-              <span v-for="c in p.colores" :key="c" class="i3d-swatch-chip">{{ c }}</span>
-            </div>
             <div class="i3d-prod-code mono">{{ p.codigo }}</div>
           </q-card-section>
           <q-card-actions class="i3d-prod-actions">
@@ -236,7 +233,7 @@ onMounted(async () => {
   position: relative; height: 175px; background: var(--bg-sunken);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
-.i3d-prod-img img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-slow) var(--ease-standard); }
+.i3d-prod-img img { width: 100%; height: 100%; object-fit: contain; transition: transform var(--dur-slow) var(--ease-standard); }
 .i3d-prod-card:hover .i3d-prod-img img { transform: scale(1.05); }
 .i3d-disp { position: absolute; top: 10px; right: 10px; font-size: 11px; }
 
@@ -244,11 +241,6 @@ onMounted(async () => {
 .i3d-prod-eyebrow { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 4px; }
 .i3d-prod-name { font-size: var(--fs-title); font-weight: var(--fw-title); color: var(--text-primary); line-height: 1.3; }
 .i3d-prod-desc { font-size: var(--fs-meta); color: var(--text-secondary); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.i3d-swatch-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: var(--sp-2); }
-.i3d-swatch-chip {
-  font-size: 11px; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-pill);
-  padding: 1px 9px;
-}
 .i3d-prod-code { font-size: 11px; color: var(--text-muted); margin-top: var(--sp-2); }
 
 .i3d-prod-actions { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-3) var(--sp-4) var(--sp-4); }

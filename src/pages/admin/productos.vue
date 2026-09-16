@@ -43,6 +43,33 @@
       <template #extra="{ form }">
         <SkuPreview :categoria="form.categoria" :existing="editing ? current.sku : ''" />
 
+        <!-- Fotos adicionales: la "Foto principal" de arriba es la que se ve en la
+             tarjeta del catálogo; estas se suman a la galería de la ficha del producto. -->
+        <div class="i3d-gallery">
+          <div class="i3d-bom-head">
+            <span>Fotos adicionales</span>
+            <span class="i3d-bom-hint">Se muestran en la galería del producto, además de la principal</span>
+          </div>
+          <div v-if="fotos.length" class="i3d-gallery-grid">
+            <div v-for="(url, i) in fotos" :key="url" class="i3d-gallery-item">
+              <img :src="url" alt="" />
+              <q-btn dense flat round size="sm" color="negative" class="i3d-gallery-remove" @click="fotos.splice(i, 1)">
+                <AppIcon name="close" :size="14" color="danger" />
+              </q-btn>
+            </div>
+          </div>
+          <q-file
+            :model-value="null" label="Agregar foto a la galería"
+            accept="image/jpeg,image/png,image/webp" outlined dense clearable
+            :loading="galleryUploading" @update:model-value="onGalleryPick"
+          >
+            <template #prepend><AppIcon name="add_photo_alternate" :size="18" /></template>
+          </q-file>
+          <q-linear-progress
+            v-if="galleryUploading" :value="galleryProgress / 100" color="primary" size="6px" class="q-mt-xs rounded-borders"
+          />
+        </div>
+
         <!-- Insumos / accesorios que lleva el producto -->
         <div class="i3d-bom">
           <div class="i3d-bom-head">
@@ -111,6 +138,7 @@ import SkuPreview from '../../components/SkuPreview.vue';
 import ItemsTable from '../../components/ItemsTable.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import { useAuthStore } from '../../stores/auth.js';
+import { useImageUpload } from '../../composables/useImageUpload.js';
 import { useCrudResource } from '../../composables/useCrudResource.js';
 import {
   fetchProductos, createProducto, updateProducto, deleteProducto, fetchConfig, fetchInsumos
@@ -148,8 +176,7 @@ const fields = computed(() => [
     options: categorias.value.map((c) => ({ label: c, value: c })),
     hint: 'Define el prefijo del SKU' },
   { name: 'descripcion', label: 'Descripción', type: 'textarea', cols: 12 },
-  { name: 'material', label: 'Material', cols: 6 },
-  { name: 'colores', label: 'Colores', type: 'chips', cols: 6 },
+  { name: 'material', label: 'Material', cols: 12 },
   { name: 'precioVenta', label: 'Precio de venta', type: 'number', cols: 6, prefix: '$' },
   { name: 'stock', label: 'Stock', type: 'number', cols: 6 },
   { name: 'pesoInterno', label: 'Peso (g) [interno]', type: 'number', cols: 4 },
@@ -183,12 +210,20 @@ const bomColumns = [
 ];
 const draftInsumo = ref({ insumo: null, cantidad: 1 });
 
+// Fotos adicionales de la galeria (separado de fotoPrincipal, que ya maneja ResourceDialog).
+const fotos = ref([]);
+const { uploading: galleryUploading, progress: galleryProgress, uploadImage: uploadGalleryImage } = useImageUpload();
+async function onGalleryPick(file) {
+  if (!file) return;
+  const url = await uploadGalleryImage(file, 'productos');
+  if (url) fotos.value.push(url);
+}
+
 const detailFields = computed(() => {
   const p = current.value;
   const base = [
-    { label: 'Categoría', value: p.categoria, cols: 4 },
-    { label: 'Material', value: p.material, cols: 4 },
-    { label: 'Colores', value: (p.colores || []).join(', '), cols: 4 },
+    { label: 'Categoría', value: p.categoria, cols: 6 },
+    { label: 'Material', value: p.material, cols: 6 },
     { label: 'Precio de venta', value: money(p.precioVenta), mono: true, cols: 6 },
     { label: 'Stock', value: `${p.stock ?? 0}`, mono: true, cols: 6 }
   ];
@@ -216,8 +251,8 @@ function bomFromProducto(p) {
 }
 
 function resetDraft() { draftInsumo.value = { insumo: null, cantidad: 1 }; }
-function openCreate() { editing.value = false; current.value = {}; bom.value = []; resetDraft(); dialog.value = true; }
-function openEdit(row) { editing.value = true; current.value = { ...row }; bom.value = bomFromProducto(row); resetDraft(); dialog.value = true; }
+function openCreate() { editing.value = false; current.value = {}; bom.value = []; fotos.value = []; resetDraft(); dialog.value = true; }
+function openEdit(row) { editing.value = true; current.value = { ...row }; bom.value = bomFromProducto(row); fotos.value = [...(row.fotos || [])]; resetDraft(); dialog.value = true; }
 function openDetail(row) { current.value = { ...row }; detailDialog.value = true; }
 
 function addInsumo() {
@@ -244,7 +279,7 @@ function filterInsumos(val, update) {
 }
 
 async function onSubmit(payload) {
-  const full = { ...payload, insumos: bom.value.map((l) => ({ insumo: l.insumo, cantidad: l.cantidad })) };
+  const full = { ...payload, insumos: bom.value.map((l) => ({ insumo: l.insumo, cantidad: l.cantidad })), fotos: fotos.value };
   if (!full.categoria) { $q.notify({ type: 'warning', message: 'Elegí una categoría (define el SKU)' }); return; }
   const okDone = editing.value ? await update(current.value._id, full) : await create(full);
   if (okDone) dialog.value = false;
@@ -271,4 +306,15 @@ onMounted(async () => {
 .i3d-bom-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
 .i3d-bom-head > span:first-child { font-weight: 600; }
 .i3d-bom-hint { font-size: 11px; color: var(--text-muted); }
+
+.i3d-gallery { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
+.i3d-gallery-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.i3d-gallery-item {
+  position: relative; width: 72px; height: 72px; border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border); background: var(--bg-sunken);
+}
+.i3d-gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.i3d-gallery-remove {
+  position: absolute; top: 2px; right: 2px; background: color-mix(in srgb, var(--bg-base) 70%, transparent);
+}
 </style>

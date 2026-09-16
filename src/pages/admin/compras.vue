@@ -21,6 +21,9 @@
       <template #cell-proveedor="{ row }">{{ row.proveedor?.nombre || '—' }}</template>
       <template #cell-items="{ row }">{{ row.items?.length || 0 }} ítem(s)</template>
       <template #cell-total="{ value }">{{ money(value) }}</template>
+      <template #actions="{ row }">
+        <q-btn flat dense round size="sm" @click="openEdit(row)"><AppIcon name="edit" :size="16" color="tech" /></q-btn>
+      </template>
     </ResourceList>
 
     <!-- Vista de la compra -->
@@ -33,11 +36,11 @@
       <div v-if="current.observaciones" class="q-mt-sm"><div class="i3d-k">Observaciones</div>{{ current.observaciones }}</div>
     </RecordDetailDialog>
 
-    <!-- Nueva compra -->
+    <!-- Nueva compra / edicion -->
     <q-dialog v-model="dialog" persistent>
       <q-card class="i3d-order-card">
         <q-card-section class="row items-center">
-          <div class="text-h6">Nueva compra</div>
+          <div class="text-h6">{{ editing ? 'Editar compra' : 'Nueva compra' }}</div>
           <q-space /><q-btn flat round dense v-close-popup><AppIcon name="close" :size="18" /></q-btn>
         </q-card-section>
         <q-separator />
@@ -104,7 +107,7 @@
           <div class="i3d-order-total">Total: {{ money(comprasTotal) }}</div>
           <q-space />
           <q-btn flat label="Cancelar" v-close-popup />
-          <q-btn color="primary" label="Registrar compra" :loading="saving" @click="onSubmit" />
+          <q-btn color="primary" :label="editing ? 'Guardar cambios' : 'Registrar compra'" :loading="saving" @click="onSubmit" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -120,7 +123,7 @@ import ItemsTable from '../../components/ItemsTable.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import ColorDot from '../../components/ColorDot.vue';
 import { useCrudResource } from '../../composables/useCrudResource.js';
-import { fetchCompras, createCompra, fetchProveedores, fetchInsumos, fetchFilamentos } from '../../services/api.js';
+import { fetchCompras, createCompra, updateCompra, fetchProveedores, fetchInsumos, fetchFilamentos } from '../../services/api.js';
 import { formatMoney, formatDate } from '../../utils/format.js';
 import '../../styles/dashboard-unified.css';
 
@@ -149,8 +152,8 @@ const formasPago = [
   { label: 'MercadoPago', value: 'mercadopago' }, { label: 'Otro', value: 'otro' }
 ];
 
-const { items, pagination, loading, saving, reload, goToPage, create } = useCrudResource({
-  fetchFn: fetchCompras, createFn: createCompra, updateFn: () => {}, deleteFn: () => {}, label: 'la compra'
+const { items, pagination, loading, saving, reload, goToPage, create, update } = useCrudResource({
+  fetchFn: fetchCompras, createFn: createCompra, updateFn: updateCompra, deleteFn: () => {}, label: 'la compra'
 });
 
 const columns = [
@@ -163,7 +166,9 @@ const columns = [
 const fDesde = ref('');
 const fHasta = ref('');
 const dialog = ref(false);
-const form = ref({ proveedor: null, fecha: '', formaPago: 'efectivo', items: [] });
+const editing = ref(false);
+const editingId = ref(null);
+const form = ref({ proveedor: null, fecha: '', formaPago: 'efectivo', observaciones: '', items: [] });
 const draft = ref({ articuloTipo: 'Insumo', articuloId: null, descripcion: '', cantidad: 1, precioUnitario: 0 });
 const provOptions = ref([]);
 const insumos = ref([]);
@@ -188,7 +193,27 @@ function onFilter() { reload({ desde: fDesde.value, hasta: fHasta.value }); }
 function openDetail(row) { current.value = { ...row }; detailDialog.value = true; }
 
 function openCreate() {
-  form.value = { proveedor: null, fecha: new Date().toISOString().slice(0, 10), formaPago: 'efectivo', items: [] };
+  editing.value = false;
+  editingId.value = null;
+  form.value = { proveedor: null, fecha: new Date().toISOString().slice(0, 10), formaPago: 'efectivo', observaciones: '', items: [] };
+  draft.value = { articuloTipo: 'Insumo', articuloId: null, descripcion: '', cantidad: 1, precioUnitario: 0 };
+  refreshArticuloOptions();
+  dialog.value = true;
+}
+
+function openEdit(row) {
+  editing.value = true;
+  editingId.value = row._id;
+  form.value = {
+    proveedor: row.proveedor?._id || null,
+    fecha: row.fecha ? new Date(row.fecha).toISOString().slice(0, 10) : '',
+    formaPago: row.formaPago || 'efectivo',
+    observaciones: row.observaciones || '',
+    items: (row.items || []).map((i) => ({
+      articuloTipo: i.articuloTipo, articuloId: i.articuloId || null,
+      descripcion: i.descripcion, cantidad: i.cantidad, precioUnitario: i.precioUnitario
+    }))
+  };
   draft.value = { articuloTipo: 'Insumo', articuloId: null, descripcion: '', cantidad: 1, precioUnitario: 0 };
   refreshArticuloOptions();
   dialog.value = true;
@@ -227,9 +252,10 @@ async function onSubmit() {
     proveedor: form.value.proveedor || undefined,
     fecha: form.value.fecha || undefined,
     formaPago: form.value.formaPago,
+    observaciones: form.value.observaciones || undefined,
     items: form.value.items.map((i) => ({ articuloTipo: i.articuloTipo, articuloId: i.articuloId || undefined, descripcion: i.descripcion, cantidad: i.cantidad, precioUnitario: i.precioUnitario }))
   };
-  const okDone = await create(payload);
+  const okDone = editing.value ? await update(editingId.value, payload) : await create(payload);
   if (okDone) dialog.value = false;
 }
 

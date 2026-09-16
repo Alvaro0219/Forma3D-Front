@@ -9,7 +9,7 @@ import {
   PanelLeftClose, Users, CreditCard, Printer, ClipboardList, Minus,
   MinusCircle, Save, Clock, Search, Settings, Store, ArrowLeftRight,
   SlidersHorizontal, Upload, Box, Eye, EyeOff, TriangleAlert, Palette,
-  Phone, Mail, Tag, DollarSign, CalendarDays, TrendingUp, Hash, Weight
+  Phone, Mail, Tag, DollarSign, CalendarDays, TrendingUp, Hash, Weight, Copy
 } from '@lucide/vue';
 
 export const ICONS = {
@@ -28,6 +28,7 @@ export const ICONS = {
   check_circle: CircleCheck,
   close: X,
   cloud_upload: CloudUpload,
+  content_copy: Copy,
   dashboard: LayoutDashboard,
   dark_mode: Moon,
   delete: Trash2,

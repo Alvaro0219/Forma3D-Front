@@ -35,12 +35,13 @@
               <AppIcon name="layers" :size="16" :bordered="false" color="muted" />
               <span class="i3d-meta-text">Material: {{ producto.material }}</span>
             </div>
-            <div v-if="producto.colores?.length" class="i3d-meta-line">
+            <div v-if="coloresDisponibles.length" class="i3d-meta-line">
               <AppIcon name="palette" :size="16" :bordered="false" color="muted" />
               <span class="i3d-meta-text i3d-swatch-row">
-                <span v-for="c in producto.colores" :key="c" class="i3d-swatch-chip">{{ c }}</span>
+                <ColorDot v-for="c in coloresDisponibles" :key="c" :color="c" :size="18" :title="c" />
               </span>
             </div>
+            <div v-if="coloresDisponibles.length" class="i3d-swatch-hint">Colores disponibles — consultanos por tu preferido</div>
           </div>
 
           <div class="i3d-detail-price-row i3d-block">
@@ -68,8 +69,9 @@ import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import LoadingState from '../../components/LoadingState.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import ColorDot from '../../components/ColorDot.vue';
 import { useCarritoStore } from '../../stores/carrito.js';
-import { fetchProductoPublico } from '../../services/api.js';
+import { fetchProductoPublico, fetchTiendaInfo } from '../../services/api.js';
 import { formatMoney } from '../../utils/format.js';
 
 const route = useRoute();
@@ -81,6 +83,9 @@ const producto = ref(null);
 const loading = ref(true);
 const qty = ref(1);
 const activeFoto = ref('');
+// Colores realmente disponibles en stock (filamentos cargados), no los que carga
+// cada producto a mano: son los mismos para cualquier producto de la tienda.
+const coloresDisponibles = ref([]);
 
 const fotos = computed(() => {
   const p = producto.value;
@@ -111,7 +116,13 @@ function add() {
 }
 
 watch(() => route.params.id, (id) => { if (id) load(id); });
-onMounted(() => load(route.params.id));
+onMounted(async () => {
+  load(route.params.id);
+  try {
+    const info = await fetchTiendaInfo();
+    coloresDisponibles.value = info.coloresDisponibles || [];
+  } catch { /* si falla, simplemente no se muestra la fila de colores */ }
+});
 </script>
 
 <style scoped>
@@ -124,22 +135,22 @@ onMounted(() => load(route.params.id));
   height: 360px; border-radius: var(--radius-md); background: var(--bg-sunken); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
-.i3d-detail-main-img img { width: 100%; height: 100%; object-fit: cover; }
+.i3d-detail-main-img img { width: 100%; height: 100%; object-fit: contain; }
 .i3d-detail-thumbs { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); }
 .i3d-detail-thumb {
   width: 56px; height: 56px; border-radius: var(--radius-sm); overflow: hidden; padding: 0;
   border: 2px solid var(--border); background: var(--bg-sunken); cursor: pointer;
 }
 .i3d-detail-thumb.active { border-color: var(--accent); }
-.i3d-detail-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.i3d-detail-thumb img { width: 100%; height: 100%; object-fit: contain; }
 
 .i3d-detail-name { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; color: var(--text-primary); margin: 2px 0 4px; }
 .i3d-detail-code { font-size: 12px; color: var(--text-muted); margin-bottom: var(--sp-3); }
 .i3d-detail-disp { margin-bottom: var(--sp-4); }
 .i3d-detail-desc { color: var(--text-secondary); line-height: 1.6; margin: 0 0 var(--sp-4); }
 
-.i3d-swatch-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-.i3d-swatch-chip { font-size: 11px; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 1px 9px; }
+.i3d-swatch-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.i3d-swatch-hint { font-size: 11px; color: var(--text-muted); margin: -2px 0 var(--sp-2) 24px; }
 
 .i3d-detail-price-row { display: flex; align-items: center; justify-content: space-between; }
 .i3d-detail-price { font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: -0.01em; }
