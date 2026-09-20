@@ -113,7 +113,7 @@ async function finalizar() {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--sp-4) var(--sp-4); border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
-.i3d-cart-title { font-size: var(--fs-title); font-weight: var(--fw-title); color: var(--text-primary); }
+.i3d-cart-title { font-family: var(--font-display); font-size: 20px; font-weight: 500; color: var(--text-primary); }
 
 .i3d-cart-empty {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;

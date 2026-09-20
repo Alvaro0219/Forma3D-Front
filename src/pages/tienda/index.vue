@@ -1,11 +1,17 @@
 <template>
   <div>
-    <!-- Héroe: identidad + firma visual (el macetero se imprime solo) + búsqueda -->
-    <section class="i3d-hero i3d-printbed">
+    <!-- Héroe: minimalista, tipografía protagonista, sin efectos decorativos -->
+    <section class="i3d-hero">
       <div class="i3d-hero-copy">
-        <span class="i3d-hero-eyebrow">Catálogo · {{ info.nombreNegocio || 'Impresión 3D' }}</span>
-        <h1 class="i3d-hero-title">Tu idea, impresa<br />capa a capa.</h1>
-        <p class="i3d-hero-sub">Piezas listas para llevar o a pedido. Elegís, confirmás por WhatsApp y coordinamos el envío.</p>
+        <span class="i3d-hero-eyebrow">Impresión 3D a medida</span>
+        <h1 class="i3d-hero-title">Piezas hechas<br />a tu medida.</h1>
+        <p class="i3d-hero-sub">Diseño personalizado para regalos y momentos especiales. Elegís, confirmás por WhatsApp y coordinamos la entrega.</p>
+
+        <!-- Firma de marca: el trazo de una trayectoria de impresión, terminando en el punto de extrusión -->
+        <svg class="i3d-hero-mark" viewBox="0 0 120 12" aria-hidden="true">
+          <line x1="0" y1="6" x2="104" y2="6" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="1 7" stroke-linecap="round" />
+          <circle cx="112" cy="6" r="5" fill="var(--accent)" />
+        </svg>
 
         <div class="i3d-hero-search">
           <q-input v-model="search" outlined dense debounce="350" placeholder="Buscar producto"
@@ -15,15 +21,9 @@
         </div>
       </div>
 
-      <!-- Firma: la F de la marca, despidiendo filamento por la boquilla -->
+      <!-- Isotipo de marca -->
       <div class="i3d-hero-art" aria-hidden="true">
-        <svg viewBox="0 0 145 220" class="i3d-print-svg">
-          <path class="i3d-print-outline"
-                d="M20,15 L100,15 L100,37 L42,37 L42,68 L80,68 L80,88 L42,88 L42,155 L42,162 L31,178 L20,162 L20,155 Z" />
-          <path class="i3d-print-thread" d="M31,178 C20,186 8,186 8,198 C8,210 24,213 36,204 L132,204" />
-          <path class="i3d-print-thread-flow" d="M31,178 C20,186 8,186 8,198 C8,210 24,213 36,204 L132,204" />
-          <circle class="i3d-print-drip" cx="31" cy="178" r="4" />
-        </svg>
+        <img src="/forma-logo.png" alt="" />
       </div>
     </section>
 
@@ -159,54 +159,25 @@ onMounted(async () => {
   padding: var(--sp-7) var(--sp-5) var(--sp-6);
   border-bottom: 1px solid var(--border);
 }
-.i3d-hero-copy { max-width: 520px; }
+.i3d-hero-copy { max-width: 560px; }
+.i3d-hero-art { flex-shrink: 0; width: 280px; display: none; }
+.i3d-hero-art img { width: 100%; height: auto; object-fit: contain; }
+@media (min-width: 900px) { .i3d-hero-art { display: block; } }
 .i3d-hero-eyebrow {
-  display: inline-block; font-size: var(--fs-label); font-weight: var(--fw-label);
-  text-transform: uppercase; letter-spacing: .08em; color: var(--tech); margin-bottom: var(--sp-3);
+  display: inline-block; font-size: var(--fs-label); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--text-secondary); margin-bottom: var(--sp-3);
 }
 .i3d-hero-title {
-  font-size: 44px; line-height: 1.08; letter-spacing: -0.02em; font-weight: 800;
+  font-family: var(--font-display); font-size: 46px; line-height: 1.1; letter-spacing: 0; font-weight: 500;
   color: var(--text-primary); margin: 0 0 var(--sp-3);
 }
-.i3d-hero-sub { color: var(--text-secondary); font-size: var(--fs-body); margin: 0 0 var(--sp-5); max-width: 42ch; }
+.i3d-hero-sub { color: var(--text-secondary); font-size: var(--fs-body); margin: 0 0 var(--sp-4); max-width: 42ch; }
+
+/* Firma de marca: trayectoria de impresión que termina en el punto de extrusión */
+.i3d-hero-mark { display: block; width: 120px; height: 12px; margin-bottom: var(--sp-5); }
+
 .i3d-hero-search { max-width: 380px; }
-.i3d-search-input :deep(.q-field__control) { background: var(--bg-surface); }
-
-.i3d-hero-art { flex-shrink: 0; width: 145px; height: 210px; display: none; }
-.i3d-print-svg { width: 100%; height: 100%; overflow: visible; }
-
-/* La F se dibuja sola, como si la estuviera imprimiendo la propia boquilla */
-.i3d-print-outline {
-  fill: none; stroke: var(--tech); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round;
-  stroke-dasharray: 620; stroke-dashoffset: 620;
-  animation: i3d-print-draw 1.1s var(--ease-standard) forwards;
-}
-/* El filamento sale de la punta de la F y queda tendido */
-.i3d-print-thread {
-  fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round;
-  stroke-dasharray: 220; stroke-dashoffset: 220;
-  animation: i3d-print-draw .9s var(--ease-standard) 1s forwards;
-}
-/* Encima, un patrón de guiones que "fluye" sin parar: sensación de extrusión activa */
-.i3d-print-thread-flow {
-  fill: none; stroke: color-mix(in srgb, var(--accent) 55%, white); stroke-width: 5; stroke-linecap: round;
-  stroke-dasharray: 4 14; opacity: 0;
-  animation: i3d-print-flow 1s linear 1.9s infinite;
-}
-.i3d-print-drip {
-  fill: var(--accent); opacity: 0; transform-box: fill-box; transform-origin: center;
-  animation: i3d-print-drip-in .25s var(--ease-standard) .9s forwards, i3d-print-drip-pulse 1.5s var(--ease-standard) 1.9s infinite;
-}
-@keyframes i3d-print-draw { to { stroke-dashoffset: 0; } }
-@keyframes i3d-print-flow { 0% { opacity: .85; stroke-dashoffset: 36; } 100% { opacity: .85; stroke-dashoffset: 0; } }
-@keyframes i3d-print-drip-in { to { opacity: 1; } }
-@keyframes i3d-print-drip-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
-
-@media (min-width: 900px) { .i3d-hero-art { display: block; } }
-@media (prefers-reduced-motion: reduce) {
-  .i3d-print-outline, .i3d-print-thread { stroke-dashoffset: 0; animation: none; }
-  .i3d-print-thread-flow, .i3d-print-drip { animation: none; opacity: 0; }
-}
+.i3d-search-input :deep(.q-field__control) { background: var(--bg-elevated); }
 
 /* ---------- Filtros ---------- */
 .i3d-filters { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; margin-bottom: var(--sp-5); }
@@ -230,21 +201,23 @@ onMounted(async () => {
 }
 .i3d-prod-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-2); }
 .i3d-prod-img {
-  position: relative; height: 175px; background: var(--bg-sunken);
+  position: relative; height: 240px; background: var(--bg-sunken);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
 .i3d-prod-img img { width: 100%; height: 100%; object-fit: contain; transition: transform var(--dur-slow) var(--ease-standard); }
-.i3d-prod-card:hover .i3d-prod-img img { transform: scale(1.05); }
+.i3d-prod-card:hover .i3d-prod-img img { transform: scale(1.03); }
 .i3d-disp { position: absolute; top: 10px; right: 10px; font-size: 11px; }
+/* "Sin stock" se distingue por peso, no por color: el rojo queda solo para CTAs y precio */
+.i3d-disp[data-tone="failed"] { font-weight: 700; color: var(--text-primary); }
 
 .i3d-prod-body { padding-bottom: 0; }
-.i3d-prod-eyebrow { font-size: var(--fs-label); font-weight: var(--fw-label); text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 4px; }
-.i3d-prod-name { font-size: var(--fs-title); font-weight: var(--fw-title); color: var(--text-primary); line-height: 1.3; }
+.i3d-prod-eyebrow { font-size: var(--fs-label); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: 4px; }
+.i3d-prod-name { font-family: var(--font-display); font-size: 18px; font-weight: 500; color: var(--text-primary); line-height: 1.3; }
 .i3d-prod-desc { font-size: var(--fs-meta); color: var(--text-secondary); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .i3d-prod-code { font-size: 11px; color: var(--text-muted); margin-top: var(--sp-2); }
 
 .i3d-prod-actions { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-3) var(--sp-4) var(--sp-4); }
-.i3d-prod-price { font-size: 21px; font-weight: 800; color: var(--accent); letter-spacing: -0.01em; }
+.i3d-prod-price { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: 0; }
 
 @media (max-width: 599px) {
   .i3d-hero { margin: -28px -18px var(--sp-5); padding: var(--sp-6) var(--sp-4) var(--sp-5); }

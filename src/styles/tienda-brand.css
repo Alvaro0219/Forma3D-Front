@@ -1,0 +1,91 @@
+/* ============================================================
+   Identidad de marca FORMA — SOLO para la tienda pública.
+   Se activa con el atributo [data-store-brand] en <html>, que
+   StoreLayout.vue pone al entrar a /tienda y saca al salir. Así
+   el panel de administración sigue con su tema oscuro "Additive"
+   sin tocar una sola línea de sus estilos.
+
+   Minimalista, técnica, un único acento de color (rojo). Nada de
+   gradientes, sombras pesadas ni paletas múltiples.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@500&family=Poppins:wght@400;600;700&display=swap');
+
+:root[data-store-brand] {
+  /* Tipografía: Jost para títulos (--font-display), Poppins para todo lo
+     demás (--font-sans ya es lo que hereda toda la UI vía `body`). */
+  --font-sans: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-display: 'Jost', system-ui, sans-serif;
+
+  /* Fondo y superficies */
+  --bg-base:        #FFFFFF;
+  --bg-surface:     #F2F2F2;
+  --bg-elevated:    #FFFFFF;
+  --bg-sunken:      #F2F2F2;
+  --border:         #8C8C8C;
+  --border-strong:  #000000;
+
+  /* Texto */
+  --text-primary:   #000000;
+  --text-secondary: #4D4D4D;
+  --text-muted:     #8C8C8C;
+
+  /* Único acento de marca: rojo. Todo lo demás que el resto de la app usa
+     como "segundo color" (tech/electric) se neutraliza a texto secundario
+     para que ningún componente reciclado reintroduzca un color de más. */
+  --accent:          #E21504;
+  --accent-hover:    #A81003;
+  --accent-soft:     #FBE7E5;
+  --accent-contrast: #FFFFFF;
+  --tech:            #000000;
+  --tech-soft:       #F2F2F2;
+  --electric:        #4D4D4D;
+
+  /* Estados: sin verde/naranja/celeste. El rojo se reserva para CTAs,
+     precios y detalles de personalización — no para insignias de estado
+     (ver nota en tienda/index.vue sobre "Sin stock"). */
+  --success:         #000000;
+  --warning:         #4D4D4D;
+  --danger:          #4D4D4D;
+  --info:            #4D4D4D;
+  --status-pending:  #8C8C8C;
+  --status-printing: #4D4D4D;
+  --status-done:     #000000;
+  --status-failed:   #4D4D4D;
+  --status-canceled: #8C8C8C;
+
+  /* Sin glow ni sombras pesadas: capa neutra (mantiene valida la lista de
+     box-shadow de componentes que combinan glow + sombra). */
+  --glow-accent: 0 0 0 rgba(0,0,0,0);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.05);
+  --shadow-2: 0 10px 24px -14px rgba(0,0,0,.14);
+
+  /* Radios: controles rectos (4px), tarjetas con radio suave (12px).
+     Nada de pill: unifica chips, badges y el boton flotante del carrito. */
+  --radius-sm:   4px;
+  --radius-md:   12px;
+  --radius-lg:   12px;
+  --radius-pill: 4px;
+
+  /* Grilla sutil de la "cama de impresión" en placeholders sin foto: sobre
+     blanco necesita una línea oscura tenue, no la clara del tema por defecto. */
+  --grid-line: rgba(0,0,0,.045);
+
+  color-scheme: light;
+}
+
+/* Placeholders e inputs: el gris de texto secundario alcanza contraste legible
+   sobre blanco (~7:1) y a la vez queda mas claro que el texto ya escrito
+   (negro), asi se distinguen a simple vista. --text-muted (#8C8C8C) es
+   suficiente para metadatos accesorios pero no para texto que hay que leer
+   para saber que completar. */
+[data-store-brand] input::placeholder,
+[data-store-brand] textarea::placeholder,
+[data-store-brand] .q-placeholder::placeholder {
+  color: var(--text-secondary);
+  opacity: 1; /* Firefox atenua el placeholder por defecto */
+}
+[data-store-brand] .q-field__label { color: var(--text-secondary); }
+/* Borde visible en reposo (antes) -> mas oscuro al pasar el mouse o enfocar */
+[data-store-brand] .q-field--outlined .q-field__control:before { border-color: var(--border); }
+[data-store-brand] .q-field--outlined .q-field__control:hover:before { border-color: var(--border-strong); }

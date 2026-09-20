@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useThemeStore } from '../stores/theme.js';
@@ -176,13 +176,18 @@ function isActive(path) { return route.path === path || route.path.startsWith(pa
 function go(path) { router.push(path); }
 function logout() { auth.logout(); router.push('/login'); }
 
+// El <title> por defecto (index.html) es el de la tienda, para que Google
+// indexe el nombre de marca. Acá adentro conviene distinguir la pestaña.
+const prevTitle = document.title;
 onMounted(async () => {
+  document.title = 'Panel — Gestión Impresión 3D';
   try {
     const cfg = await fetchConfig();
     if (cfg?.nombreNegocio) nombreNegocio.value = cfg.nombreNegocio;
     if (cfg?.logo) logoUrl.value = cfg.logo;
   } catch { /* default */ }
 });
+onUnmounted(() => { document.title = prevTitle; });
 </script>
 
 <style scoped>

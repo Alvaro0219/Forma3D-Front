@@ -3,16 +3,11 @@
     <header class="i3d-store-header">
       <router-link to="/tienda" class="i3d-store-brand">
         <span class="i3d-brand-mark" aria-hidden="true">
-          <img v-if="info.logo" :src="info.logo" alt="" class="i3d-brand-logo" />
-          <svg v-else viewBox="0 0 24 24" fill="none"><path d="M12 2 L21 7 V17 L12 22 L3 17 V7 Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12 L21 7 M12 12 V22 M12 12 L3 7" stroke="var(--tech)" stroke-width="1.2"/></svg>
+          <img src="/forma-logo.png" alt="" class="i3d-brand-logo" />
         </span>
         <span>{{ info.nombreNegocio || 'Tienda 3D' }}</span>
       </router-link>
       <q-space />
-      <q-btn flat round dense @click="theme.toggle()">
-        <AppIcon :name="theme.isDark ? 'light_mode' : 'dark_mode'" :size="18" />
-        <q-tooltip>{{ theme.isDark ? 'Modo claro' : 'Modo oscuro' }}</q-tooltip>
-      </q-btn>
       <q-btn flat round @click="carrito.openDrawer()">
         <AppIcon name="shopping_cart" :size="20" />
         <q-badge v-if="carrito.count" color="primary" floating>{{ carrito.count }}</q-badge>
@@ -24,6 +19,7 @@
     </main>
 
     <footer class="i3d-store-footer">
+      <img src="/forma-logo.png" alt="" class="i3d-footer-logo" />
       <span>{{ info.nombreNegocio || 'Tienda 3D' }} — Impresión 3D a pedido</span>
     </footer>
 
@@ -38,19 +34,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Dark } from 'quasar';
 import { useCarritoStore } from '../stores/carrito.js';
 import { useThemeStore } from '../stores/theme.js';
 import { fetchTiendaInfo } from '../services/api.js';
 import AppIcon from '../components/AppIcon.vue';
 import CartDrawer from '../components/CartDrawer.vue';
+import '../styles/tienda-brand.css';
 
 const carrito = useCarritoStore();
 const theme = useThemeStore();
 const info = ref({});
 
+// La tienda tiene una identidad de marca fija (blanco + rojo), independiente
+// del dark/light del panel de administracion: activa el override de tokens
+// mientras se navega /tienda y lo saca al salir (ver styles/tienda-brand.css).
+//
+// Ademas de los tokens, Quasar arranca con config.dark=true (main.js) y ese
+// modo oscuro queda "pegado" segun la ultima preferencia del panel — sin este
+// Dark.set(false), las etiquetas de los q-input salen en blanco sobre fondo
+// blanco (invisibles), porque Quasar sigue creyendo que el fondo es oscuro.
+let prevThemeColor = null;
 onMounted(async () => {
+  document.documentElement.setAttribute('data-store-brand', '1');
+  Dark.set(false);
+  const meta = document.querySelector('meta[name=theme-color]');
+  if (meta) { prevThemeColor = meta.getAttribute('content'); meta.setAttribute('content', '#FFFFFF'); }
   try { info.value = await fetchTiendaInfo(); } catch { /* la tienda puede no estar configurada aun */ }
+});
+onUnmounted(() => {
+  document.documentElement.removeAttribute('data-store-brand');
+  theme.apply(); // restaura el dark/light de Quasar segun la preferencia del panel
+  const meta = document.querySelector('meta[name=theme-color]');
+  if (meta && prevThemeColor) meta.setAttribute('content', prevThemeColor);
 });
 </script>
 
@@ -65,16 +82,23 @@ onMounted(async () => {
 }
 .i3d-store-brand {
   display: flex; align-items: center; gap: 10px;
-  font-weight: 700; font-size: 19px;
+  font-family: var(--font-display); font-weight: 500; font-size: 20px;
   color: var(--text-primary); text-decoration: none;
 }
-.i3d-brand-mark { width: 26px; height: 26px; flex-shrink: 0; }
-.i3d-brand-mark svg { width: 100%; height: 100%; }
-.i3d-brand-logo { width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-sm); }
+.i3d-brand-mark {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%;
+  overflow: hidden; background: #FFFFFF;
+}
+.i3d-brand-logo { width: 100%; height: 100%; object-fit: contain; }
 .i3d-store-main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 28px 18px; }
 .i3d-store-footer {
-  text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center; padding: 28px 24px; color: var(--text-muted); font-size: 13px;
   border-top: 1px solid var(--border);
+}
+.i3d-footer-logo {
+  width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+  background: #FFFFFF; object-fit: contain;
 }
 
 /* Carrito flotante: siempre visible en la esquina, para no perderlo de vista */

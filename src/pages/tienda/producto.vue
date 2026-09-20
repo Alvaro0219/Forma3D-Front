@@ -127,12 +127,13 @@ onMounted(async () => {
 
 <style scoped>
 .i3d-back { margin-bottom: var(--sp-4); color: var(--text-secondary); }
+.i3d-prod-eyebrow { font-size: var(--fs-label); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: 4px; }
 
 .i3d-detail { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); align-items: start; }
 @media (max-width: 767px) { .i3d-detail { grid-template-columns: 1fr; } }
 
 .i3d-detail-main-img {
-  height: 360px; border-radius: var(--radius-md); background: var(--bg-sunken); border: 1px solid var(--border);
+  height: 440px; border-radius: var(--radius-md); background: var(--bg-sunken); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
 .i3d-detail-main-img img { width: 100%; height: 100%; object-fit: contain; }
@@ -144,16 +145,17 @@ onMounted(async () => {
 .i3d-detail-thumb.active { border-color: var(--accent); }
 .i3d-detail-thumb img { width: 100%; height: 100%; object-fit: contain; }
 
-.i3d-detail-name { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; color: var(--text-primary); margin: 2px 0 4px; }
+.i3d-detail-name { font-family: var(--font-display); font-size: 32px; font-weight: 500; letter-spacing: 0; color: var(--text-primary); margin: 2px 0 4px; }
 .i3d-detail-code { font-size: 12px; color: var(--text-muted); margin-bottom: var(--sp-3); }
 .i3d-detail-disp { margin-bottom: var(--sp-4); }
+.i3d-detail-disp[data-tone="failed"] { font-weight: 700; color: var(--text-primary); }
 .i3d-detail-desc { color: var(--text-secondary); line-height: 1.6; margin: 0 0 var(--sp-4); }
 
 .i3d-swatch-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 7px; }
 .i3d-swatch-hint { font-size: 11px; color: var(--text-muted); margin: -2px 0 var(--sp-2) 24px; }
 
 .i3d-detail-price-row { display: flex; align-items: center; justify-content: space-between; }
-.i3d-detail-price { font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: -0.01em; }
+.i3d-detail-price { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: 0; }
 .i3d-detail-qty { display: flex; align-items: center; gap: var(--sp-2); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 2px 8px; }
 .i3d-detail-qty span { min-width: 18px; text-align: center; }
 </style>
